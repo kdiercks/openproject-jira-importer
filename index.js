@@ -5,9 +5,12 @@ const inquirer = require("inquirer");
 const {
   getAllJiraIssues,
   getSpecificJiraIssues,
+  getJiraCustomFields,
   downloadAttachment,
   listProjects,
   getIssueWatchers,
+  getJiraIssueTypes,
+  DEFAULT_FIELDS,
 } = require("./jira-client");
 const { generateMapping } = require("./generate-user-mapping");
 const {
@@ -25,11 +28,26 @@ const {
   getOpenProjectUsers,
   findExistingWorkPackage,
   JIRA_ID_CUSTOM_FIELD,
+  requireJiraIdField,
   getWorkPackagePriorityId,
   getWorkPackagePriorities,
   addWatcher,
+  getCustomFieldOptionsMap,
+  typeMapping,
+  setTypeMapping,
 } = require("./openproject-client");
-const { default: parse } = require("node-html-parser");
+
+// Load custom field mapping (graceful fallback if not configured)
+let customFieldMapping = [];
+try {
+  customFieldMapping = require("./custom-field-mapping");
+  if (!Array.isArray(customFieldMapping)) customFieldMapping = [];
+  if (customFieldMapping.length > 0) {
+    console.log(`Loaded ${customFieldMapping.length} custom field mapping(s)`);
+  }
+} catch (e) {
+  // No custom field mapping configured
+}
 
 // Create temp directory for attachments if it doesn't exist
 const tempDir = path.join(__dirname, "temp");
@@ -41,21 +59,14 @@ let userMapping = null;
 
 async function getOpenProjectUserId(jiraUser) {
   if (!jiraUser) {
-    console.log("No Jira user provided");
     return null;
   }
 
   const openProjectUserId = userMapping[jiraUser.accountId];
   if (openProjectUserId) {
-    console.log(
-      `Found OpenProject user ID ${openProjectUserId} for Jira user ${jiraUser.displayName}`
-    );
     return openProjectUserId;
   }
 
-  console.log(
-    `No OpenProject user mapping found for Jira user ${jiraUser.displayName}`
-  );
   return null;
 }
 
@@ -79,7 +90,13 @@ async function migrateIssues(
   // Generate or load user mapping
   console.log("\nChecking user mapping...");
   try {
-    userMapping = require("./user-mapping");
+    // Try generated mapping first, fall back to the example template
+    const mappingPath = fs.existsSync(
+      path.join(__dirname, "user-mapping.generated.js")
+    )
+      ? "./user-mapping.generated"
+      : "./user-mapping";
+    userMapping = require(mappingPath);
     const shouldUpdate = await inquirer.prompt([
       {
         type: "confirm",
@@ -99,11 +116,58 @@ async function migrateIssues(
   // List available projects
   await listProjects();
 
+  // Resolve Jira field names to IDs for name-based custom field mapping
+  const jiraFieldNameToId = await resolveJiraFieldNames(customFieldMapping);
+
   // Get work package types and statuses
-  await getWorkPackageTypes();
+  const opTypes = await getWorkPackageTypes(openProjectId);
   await getWorkPackageStatuses();
   await getWorkPackagePriorities();
   await getOpenProjectUsers();
+
+  // Auto-discover Jira issue types and build the full type mapping
+  const jiraIssueTypes = await getJiraIssueTypes();
+  const finalTypeMapping = {};
+
+  console.log("\nJira → OpenProject type mapping:");
+  for (const jiraType of jiraIssueTypes) {
+    if (typeMapping[jiraType]) {
+      // Manual override from type-mapping.js
+      finalTypeMapping[jiraType] = typeMapping[jiraType];
+      console.log(`  ✓ ${jiraType} → ${typeMapping[jiraType]} (override)`);
+    } else {
+      const match = opTypes.find(
+        (t) => t.name.toLowerCase() === jiraType.toLowerCase()
+      );
+      if (match) {
+        finalTypeMapping[jiraType] = match.name;
+        console.log(`  ✓ ${jiraType} → ${match.name} (auto)`);
+      } else {
+        console.log(`  ✗ ${jiraType} → no match in OpenProject (will default to Task)`);
+      }
+    }
+  }
+  setTypeMapping(finalTypeMapping);
+
+  // Fetch custom field options for list/multi_list custom fields
+  let cfOptionsMap = null;
+  const listFieldIds = customFieldMapping
+    .filter((m) => m.type === "list" || m.type === "multi_list")
+    .map((m) => m.openProjectField);
+  if (listFieldIds.length > 0) {
+    console.log("Fetching custom field options from OpenProject...");
+    const firstTypeId = opTypes && opTypes.length > 0
+      ? opTypes[0].id
+      : null;
+    cfOptionsMap = await getCustomFieldOptionsMap(
+      listFieldIds,
+      openProjectId,
+      firstTypeId
+    );
+    console.log(
+      `Fetched options for ${Object.keys(cfOptionsMap).length} custom field(s)`
+    );
+  }
 
   // Cache OpenProject work packages if skipUpdates is enabled
   let openProjectWorkPackagesCache = null;
@@ -117,10 +181,13 @@ async function migrateIssues(
     );
   }
 
+  // Build Jira fields list including custom fields from mapping
+  const jiraFields = buildJiraFieldsList(customFieldMapping);
+
   // Get Jira issues
   const jiraIssues = specificIssues
-    ? await getSpecificJiraIssues(jiraProjectKey, specificIssues)
-    : await getAllJiraIssues(jiraProjectKey);
+    ? await getSpecificJiraIssues(jiraProjectKey, specificIssues, jiraFields)
+    : await getAllJiraIssues(jiraProjectKey, jiraFields);
 
   console.log(`Found ${jiraIssues.length} Jira issues to process`);
   console.log("Issues will be processed in chronological order (oldest first)");
@@ -129,11 +196,16 @@ async function migrateIssues(
   let processed = 0;
   let skipped = 0;
   let errors = 0;
+  let createdCount = 0;
+  let updatedCount = 0;
   const issueToWorkPackageMap = new Map();
+  const totalJiraIssues = jiraIssues.length;
 
   for (const issue of jiraIssues) {
     try {
-      console.log(`\nProcessing ${issue.key}...`);
+      if (processed % 500 === 0) {
+        console.log(`Progress: ${processed}/${totalJiraIssues} issues (created: ${createdCount}, skipped: ${skipped}, errors: ${errors})`);
+      }
 
       // Check if work package already exists
       let existingWorkPackage = null;
@@ -147,9 +219,18 @@ async function migrateIssues(
       }
 
       if (existingWorkPackage && skipUpdates) {
-        console.log(
-          `Skipping ${issue.key} - already exists as work package ${existingWorkPackage.id}`
-        );
+        const jiraIdField = JIRA_ID_CUSTOM_FIELD;
+        if (jiraIdField) {
+          try {
+            await updateWorkPackage(existingWorkPackage.id, {
+              [`customField${jiraIdField}`]: issue.key,
+            });
+          } catch (error) {
+            console.error(
+              `Failed to set JIRA ID on existing work package ${existingWorkPackage.id}: ${error.message}`
+            );
+          }
+        }
         issueToWorkPackageMap.set(issue.key, existingWorkPackage.id);
         skipped++;
         continue;
@@ -166,17 +247,13 @@ async function migrateIssues(
       }
 
       // Create work package payload
-      const rawDescription = Buffer.from(
-        convertAtlassianDocumentToText(
-          // #22: prefer HTML rendered content if available
-          issue.renderedFields?.description ?? issue.fields.description
-        )
-      ).toString("utf8");
       const payload = {
         _type: "WorkPackage",
         subject: issue.fields.summary,
         description: {
-          raw: rawDescription,
+          raw: Buffer.from(
+            convertAtlassianDocumentToText(issue.fields.description)
+          ).toString("utf8"),
         },
         _links: {
           type: {
@@ -198,8 +275,29 @@ async function migrateIssues(
             href: `/api/v3/projects/${openProjectId}`,
           },
         },
-        [`customField${JIRA_ID_CUSTOM_FIELD}`]: issue.key,
       };
+
+      const jiraIdField = JIRA_ID_CUSTOM_FIELD;
+      if (jiraIdField) {
+        payload[`customField${jiraIdField}`] = issue.key;
+      }
+
+      // Add custom field values from mapping
+      if (customFieldMapping.length > 0) {
+        const customFieldsPayload = buildCustomFieldPayload(
+          issue,
+          customFieldMapping,
+          userMapping,
+          cfOptionsMap
+        );
+        for (const [key, value] of Object.entries(customFieldsPayload)) {
+          if (key === "_links") {
+            Object.assign(payload._links, value);
+          } else {
+            payload[key] = value;
+          }
+        }
+      }
 
       // Add assignee if available
       if (assigneeId) {
@@ -216,123 +314,96 @@ async function migrateIssues(
       }
 
       let workPackage;
-      const hasAttachments =
-        issue.fields.attachment && issue.fields.attachment.length > 0;
       if (existingWorkPackage) {
         console.log(`Updating existing work package ${existingWorkPackage.id}`);
-        // In case there are attachments, do not update description yet, as it will be reworked later
-        if (hasAttachments) {
-          delete payload.description;
+        // Remove status from update payload to avoid workflow transition errors
+        if (payload._links?.status) {
+          delete payload._links.status;
         }
         workPackage = await updateWorkPackage(existingWorkPackage.id, payload);
+        updatedCount++;
       } else {
         console.log("Creating new work package");
-        workPackage = await createWorkPackage(openProjectId, payload);
+        try {
+          workPackage = await createWorkPackage(openProjectId, payload);
+        } catch (createError) {
+          if (
+            createError.response?.status === 422 &&
+            createError.response?.data?._embedded?.details?.attribute === "responsible"
+          ) {
+            console.log(
+              `User ${responsibleId} is not allowed to be Accountable, retrying without responsible field`
+            );
+            delete payload._links.responsible;
+            workPackage = await createWorkPackage(openProjectId, payload);
+          } else {
+            throw createError;
+          }
+        }
+        createdCount++;
+
+        // Ensure Jira ID is set via PATCH in case the creation payload
+        // didn't persist it (e.g., custom field not in form configuration).
+        // OpenProject's PATCH endpoint is more permissive than creation.
+        if (jiraIdField && !workPackage[`customField${jiraIdField}`]) {
+          try {
+            workPackage = await updateWorkPackage(workPackage.id, {
+              [`customField${jiraIdField}`]: issue.key,
+            });
+          } catch (patchError) {
+            console.error(
+              `Failed to set Jira ID on work package ${workPackage.id}: ${patchError.message}`
+            );
+          }
+        }
       }
 
       issueToWorkPackageMap.set(issue.key, workPackage.id);
 
       // Process attachments
-      /** Keep reference of attachments to be able to rework description and comments */
-      let attachmentsByJiraId = {};
-      if (hasAttachments) {
+      if (issue.fields.attachment && issue.fields.attachment.length > 0) {
         const existingAttachments = await getExistingAttachments(
           workPackage.id
         );
-        const existingAttachmentsByFileName = {};
-        for (const attachment of existingAttachments) {
-          existingAttachmentsByFileName[attachment.fileName] = attachment;
-        }
+        const existingAttachmentNames = existingAttachments.map(
+          (a) => a.fileName
+        );
 
-        for (const jiraAttachment of issue.fields.attachment) {
-          const sanitizedFileName = sanitizeFileName(jiraAttachment.filename);
-          let opAttachment;
-          if (existingAttachmentsByFileName[sanitizedFileName]) {
-            console.log(`Skipping existing attachment: ${sanitizedFileName}`);
-            opAttachment = existingAttachmentsByFileName[sanitizedFileName];
-          } else {
-            console.log(
-              `Processing attachment: ${jiraAttachment.filename}${
-                jiraAttachment.filename !== sanitizedFileName
-                  ? ` (sanitized to: ${sanitizedFileName})`
-                  : ""
-              }`
-            );
-            const tempFilePath = path.join(tempDir, jiraAttachment.filename);
-            await downloadAttachment(jiraAttachment.content, tempFilePath);
-            opAttachment = await uploadAttachment(
-              workPackage.id,
-              tempFilePath,
-              jiraAttachment.filename
-            );
-            fs.unlinkSync(tempFilePath);
+        for (const attachment of issue.fields.attachment) {
+          if (existingAttachmentNames.includes(attachment.filename)) {
+            console.log(`Skipping existing attachment: ${attachment.filename}`);
+            continue;
           }
 
-          // #14: keep track of uploaded attachment by Jira ID
-          attachmentsByJiraId[jiraAttachment.id] = {
-            jiraAttachment,
-            opAttachment,
-          };
-        }
-
-        // #14: Update work package description with fixed attachment links
-        const updatedDescription = fixAttachmentsInHTML(
-          rawDescription,
-          attachmentsByJiraId
-        );
-        if (
-          updatedDescription !==
-          (existingWorkPackage?.description?.raw ?? rawDescription)
-        ) {
-          console.log(
-            "Updating work package description with attachment links"
+          console.log(`Processing attachment: ${attachment.filename}`);
+          const tempFilePath = path.join(tempDir, attachment.filename);
+          const downloaded = await downloadAttachment(attachment.content, tempFilePath);
+          if (!downloaded) {
+            console.error(`Skipping upload for ${attachment.filename} due to download failure`);
+            continue;
+          }
+          await uploadAttachment(
+            workPackage.id,
+            tempFilePath,
+            attachment.filename
           );
-          await updateWorkPackage(workPackage.id, {
-            description: { raw: updatedDescription },
-          });
+          try { fs.unlinkSync(tempFilePath); } catch (e) {}
         }
       }
 
       // Process comments
-      // #22: prefer HTML rendered content if available
-      const fieldsCommentsData = issue.fields.comment;
-      const renderedCommentsData = issue.renderedFields?.comment;
-      const commentsData = renderedCommentsData ?? fieldsCommentsData;
-
-      // #26: in case using renderedFields, overwrite dates to maintain original format
-      if (commentsData === renderedCommentsData) {
-        // Optimize lookup by creating a map of comment IDs to original comments
-        const fieldsCommentsById = {};
-        for (const comment of fieldsCommentsData.comments) {
-          fieldsCommentsById[comment.id] = comment;
-        }
-        for (const comment of commentsData.comments) {
-          const originalComment = fieldsCommentsById[comment.id];
-          if (originalComment) {
-            comment.created = originalComment.created;
-            comment.updated = originalComment.updated;
-          }
-        }
-      }
-
-      if (commentsData && commentsData.comments.length > 0) {
+      if (issue.fields.comment && issue.fields.comment.comments.length > 0) {
         const existingComments = await getExistingComments(workPackage.id);
         const existingCommentTexts = existingComments.map((c) => c.comment.raw);
 
-        for (const comment of commentsData.comments) {
+        for (const comment of issue.fields.comment.comments) {
           const commentText = convertAtlassianDocumentToText(comment.body);
           if (commentText) {
-            const preambledComment = `${
+            const formattedComment = `${
               comment.author.displayName
             } wrote on ${new Date(
               comment.created
             ).toLocaleString()}:\n${commentText}`;
-
-            // #14: rework attachment links in comments
-            const formattedComment = fixAttachmentsInHTML(
-              preambledComment,
-              attachmentsByJiraId
-            );
 
             if (existingCommentTexts.includes(formattedComment)) {
               console.log("Skipping existing comment");
@@ -375,13 +446,200 @@ async function migrateIssues(
     fs.rmSync(tempDir, { recursive: true });
   }
 
-  console.log("\nMigration summary:");
-  console.log(`Total issues processed: ${processed + skipped}`);
-  console.log(`Completed: ${processed}`);
-  console.log(`Skipped: ${skipped}`);
+  console.log("\n=== Migration Summary ===");
+  console.log(`Total: ${processed + skipped} / ${totalJiraIssues}`);
+  console.log(`Created: ${createdCount}`);
+  console.log(`Updated: ${updatedCount}`);
+  console.log(`Skipped (existing): ${skipped}`);
   console.log(`Errors: ${errors}`);
+  console.log("=========================\n");
 
   return issueToWorkPackageMap;
+}
+
+// Resolve any human-readable Jira field names (e.g. "My Custom Field") in the
+// mapping to their internal customfield_XXXXX IDs.  Entries that already
+// use customfield_ IDs are left untouched.
+async function resolveJiraFieldNames(mappings) {
+  const needsResolving = mappings.filter(
+    (m) => m.jiraField && !m.jiraField.startsWith("customfield_")
+  );
+  if (needsResolving.length === 0) return {};
+
+  console.log("Resolving Jira field names to IDs...");
+  const jiraFields = await getJiraCustomFields();
+  const nameToId = {};
+
+  for (const field of jiraFields) {
+    nameToId[field.name] = field.id;
+  }
+
+  for (const m of needsResolving) {
+    const id = nameToId[m.jiraField];
+    if (id) {
+      console.log(`  ${m.jiraField} → ${id}`);
+      m.jiraField = id;
+    } else {
+      console.warn(
+        `  WARNING: Jira field "${m.jiraField}" not found. It will be skipped.`
+      );
+    }
+  }
+  return nameToId;
+}
+
+// Build the Jira fields list by extending DEFAULT_FIELDS with custom field IDs
+function buildJiraFieldsList(customFieldsMapping) {
+  const customFieldIds = customFieldsMapping
+    .map((m) => m.jiraField)
+    .filter((f) => f && f.startsWith("customfield_"));
+  if (customFieldIds.length === 0) return DEFAULT_FIELDS;
+  return [...DEFAULT_FIELDS, ...customFieldIds].join(",");
+}
+
+// Extract the actual value from Jira's nested custom field format
+function extractJiraValue(value) {
+  if (value === null || value === undefined) return null;
+  // Some Jira custom fields return single-element arrays even for single-select
+  if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    if (value.length === 1) return extractJiraValue(value[0]);
+    return value;
+  }
+  if (typeof value === "object") {
+    if (value.value !== undefined) return value.value;
+    if (value.name !== undefined) return value.name;
+    if (value.content && typeof value.type === "string") {
+      return convertAtlassianDocumentToText(value);
+    }
+    return value;
+  }
+  return value;
+}
+
+// Extract array values from Jira multi-value custom fields
+function extractJiraArrayValues(value) {
+  if (value === null || value === undefined) return [];
+  if (Array.isArray(value)) {
+    return value.map((v) => extractJiraValue(v)).filter((v) => v !== null);
+  }
+  return [extractJiraValue(value)];
+}
+
+// Build custom field payload for OpenProject work package
+function buildCustomFieldPayload(issue, mappings, userMapping, cfOptionsMap) {
+  const fields = {};
+
+  for (const m of mappings) {
+    const jiraValue = issue.fields[m.jiraField];
+    if (jiraValue === null || jiraValue === undefined) continue;
+
+    const key = `customField${m.openProjectField}`;
+    const type = m.type || "string";
+    const options = cfOptionsMap ? cfOptionsMap[m.openProjectField] : null;
+
+    switch (type) {
+      case "string":
+      case "text": {
+        const val = extractJiraValue(jiraValue);
+        if (val !== null && val !== undefined && val !== "") {
+          fields[key] = String(val);
+        }
+        break;
+      }
+      case "integer": {
+        const val = parseInt(extractJiraValue(jiraValue), 10);
+        if (!isNaN(val)) fields[key] = val;
+        break;
+      }
+      case "float": {
+        const val = parseFloat(extractJiraValue(jiraValue));
+        if (!isNaN(val)) fields[key] = val;
+        break;
+      }
+      case "date": {
+        const val = extractJiraValue(jiraValue);
+        if (val) {
+          fields[key] = String(val).split("T")[0];
+        }
+        break;
+      }
+      case "boolean": {
+        const val = extractJiraValue(jiraValue);
+        if (val !== null && val !== undefined) {
+          fields[key] =
+            val === true || val === "true" || val === "Yes";
+        }
+        break;
+      }
+      case "list": {
+        let val = extractJiraValue(jiraValue);
+        if (val !== null && val !== undefined) {
+          if (m.values && m.values[val]) val = m.values[val];
+          if (options && options[val]) {
+            if (!fields._links) fields._links = {};
+            fields._links[key] = { href: options[val] };
+          } else if (options) {
+            console.warn(
+              `  ${key}: value "${val}" not found among available options ` +
+                `[${Object.keys(options).join(", ")}] — falling back to string`
+            );
+            fields[key] = String(val);
+          } else {
+            fields[key] = String(val);
+          }
+        }
+        break;
+      }
+      case "multi_list": {
+        const vals = extractJiraArrayValues(jiraValue);
+        if (vals.length > 0) {
+          const mapped = m.values
+            ? vals.map((v) => m.values[v] || v)
+            : vals;
+          if (options) {
+            const hrefs = mapped
+              .map((v) => options[v] ? { href: options[v] } : null)
+              .filter(Boolean);
+            if (hrefs.length > 0) {
+              if (!fields._links) fields._links = {};
+              fields._links[key] = hrefs;
+            }
+            const unmatched = mapped.filter((v) => !options[v]);
+            if (unmatched.length > 0) {
+              console.warn(
+                `  ${key}: values [${unmatched.join(", ")}] not found among available options ` +
+                  `[${Object.keys(options).join(", ")}]`
+              );
+            }
+          } else {
+            fields[key] = mapped;
+          }
+        }
+        break;
+      }
+      case "user": {
+        // Jira user picker returns { accountId, displayName, ... }
+        if (jiraValue && typeof jiraValue === "object") {
+          let accountId = null;
+          if (jiraValue.accountId) {
+            accountId = jiraValue.accountId;
+          } else {
+            accountId = extractJiraValue(jiraValue);
+          }
+          if (accountId && userMapping && userMapping[accountId]) {
+            if (!fields._links) fields._links = {};
+            fields._links[key] = {
+              href: `/api/v3/users/${userMapping[accountId]}`,
+            };
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  return fields;
 }
 
 function convertAtlassianDocumentToText(document) {
@@ -400,113 +658,6 @@ function convertAtlassianDocumentToText(document) {
     console.error("Error converting Atlassian document:", error);
     return "";
   }
-}
-
-/**
- * #14: Fixes attachment references in HTML content by updating image sources and link hrefs
- * based on a mapping of Jira attachment IDs. For images, it also sets or overwrites the alt attribute
- * with the attachment filename and optionally returns a note about the original alt text.
- *
- * @param {string} html - The HTML string containing attachment references to be fixed.
- * @param {Object<string, Object>} attachmentsByJiraId - An object mapping Jira attachment IDs to attachment objects,
- *   where each attachment object has at least a 'filename' property.
- * @returns {string} The modified HTML string with updated attachment references.
- */
-function fixAttachmentsInHTML(html, attachmentsByJiraId) {
-  const root = parse(html);
-  root.querySelectorAll("img").forEach((img) => {
-    reworkElement(
-      img,
-      "src",
-      fixAttachmentsInHTML.regex,
-      attachmentsByJiraId,
-      (img, jiraAttachment) => {
-        const originalAlt = img.getAttribute("alt");
-        // #29: set alt attribute (in case it is missing, but we can always overwrite)
-        img.setAttribute("alt", jiraAttachment.filename);
-        if (originalAlt) return `Original alt: ${originalAlt}\n`;
-      }
-    );
-  });
-  // Also fix links to attachments that are not images
-  root.querySelectorAll("a").forEach((a) => {
-    reworkElement(a, "href", fixAttachmentsInHTML.regex, attachmentsByJiraId);
-  });
-  return root.toString();
-}
-fixAttachmentsInHTML.regex = /\/attachment\/content\/(\d+)$/;
-
-/**
- * Reworks a DOM element by updating a specified attribute with an OpenProject attachment link
- * based on a regex match against the attribute's original value. If a match is found and a corresponding
- * attachment pair exists, the attribute is set to the OpenProject download link, and the element's
- * title is updated to include original information and optionally custom content from a callback.
- *
- * @param {Element} element - The DOM element to modify.
- * @param {string} attribute - The name of the attribute to update (e.g., 'href' or 'src').
- * @param {RegExp} regex - The regular expression to match against the attribute's original value,
- *                         expected to capture the Jira attachment ID in the first group.
- * @param {Object.<string, {jiraAttachment: Object, opAttachment: Object}>} attachmentsByJiraId -
- *                        A map of Jira attachment IDs to objects containing Jira and OpenProject attachment details.
- * @param {Function|null} [buildTitleCb=null] - An optional callback function to build additional title content.
- *                        It receives the element and jiraAttachment as arguments and should return a string.
- */
-function reworkElement(
-  element,
-  attribute,
-  regex,
-  attachmentsByJiraId,
-  buildTitleCb = null
-) {
-  const originalValue = element.getAttribute(attribute);
-  const match = originalValue?.match(regex);
-  if (!match) return;
-
-  const jiraAttachmentId = match[1];
-  const attachmentPair = attachmentsByJiraId[jiraAttachmentId];
-  if (!attachmentPair) return;
-
-  const { jiraAttachment, opAttachment } = attachmentPair;
-  // #14: update attribute with OpenProject attachment link
-  element.setAttribute(
-    attribute,
-    opAttachment._links.staticDownloadLocation.href
-  );
-  // Also archive the original value just in case
-  const originalTitle = element.getAttribute("title");
-  element.setAttribute(
-    "title",
-    `${originalTitle ? `Original title: ${originalTitle}\n` : ""}${
-      buildTitleCb?.(element, jiraAttachment) ?? ""
-    }Original file name: ${
-      jiraAttachment.filename
-    }\nOriginal ${attribute}: ${originalValue}`
-  );
-}
-
-/**
- * #24: Sanitizes a file name by replacing invalid characters with underscores.
- * Replicates CarrierWave's sanitize_regexp behavior to match name after upload.
- *
- * @param {string} fileName - The file name to sanitize
- * @returns {string} The sanitized file name with invalid characters replaced by underscores
- * @see {@link https://github.com/carrierwaveuploader/carrierwave/blob/v3.1.2/lib/carrierwave/sanitized_file.rb#L23}
- *
- * @example
- * sanitizeFileName("my file (1).txt") // Returns: "my_file__1_.txt"
- * sanitizeFileName("document+v2.0.pdf") // Returns: "document+v2.0.pdf"
- */
-function sanitizeFileName(fileName) {
-  return fileName.replace(
-    // `v` flag for Unicode support, `i` for case-insensitivity, `g` for global replacement
-    // Unfortunately, `\w` behaves differently in JavaScript compared to Ruby, so we explicitly define allowed characters
-    // https://ruby-doc.org/3.4.1/Regexp.html#class-Regexp-label-POSIX+Bracket+Expressions
-    // https://unicode.org/reports/tr18/#General_Category_Property
-    // https://unicode.org/reports/tr18/#alpha
-    // https://unicode.org/reports/tr44/#Join_Control
-    /[^\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Alpha}\p{Join_Control}\.\-\+]/giv,
-    "_"
-  );
 }
 
 module.exports = {

@@ -41,7 +41,7 @@ A tool to migrate issues from Jira to OpenProject, including attachments, commen
 - `JIRA_ID_CUSTOM_FIELD`: The ID of the custom field in OpenProject that stores the Jira issue ID
   - This must be a text custom field
   - Find the ID in OpenProject: Administration > Custom fields > Work packages
-  - Default value is 1 if not specified
+  - This variable is required — the migration will fail with a clear error if not set
 
 ### OpenProject Custom Field Setup
 
@@ -49,6 +49,82 @@ A tool to migrate issues from Jira to OpenProject, including attachments, commen
 2. Create a new text custom field (if not already exists)
 3. Note the ID of the custom field
 4. Set this ID in your `.env` file as `JIRA_ID_CUSTOM_FIELD`
+
+## Configuration Files
+
+The tool uses several JS config files to control how data maps between Jira and OpenProject. All are optional — built-in defaults are used for anything not configured.
+
+### `custom-field-mapping.js`
+Maps Jira custom fields to OpenProject custom fields.
+
+```bash
+# List available fields from both systems first:
+node discover-custom-fields.js
+```
+
+Then edit `custom-field-mapping.js` to add entries:
+
+```js
+module.exports = [
+  {
+    jiraField: "customfield_12345",   // from Jira (or use field name, e.g. "Risk Level")
+    openProjectField: 7,               // from OpenProject
+    type: "list",                      // string | text | integer | float | date | boolean | list | multi_list | user
+  },
+];
+```
+
+See the file itself for all supported types and options.
+
+### `type-mapping.js`
+Maps Jira issue type names to OpenProject work package type names. Default:
+
+```js
+module.exports = {
+  Task: "Task",
+  Story: "User story",
+  Bug: "Bug",
+  Epic: "Epic",
+  Feature: "Feature",
+  Milestone: "Milestone",
+};
+```
+
+### `status-mapping.js`
+Maps Jira status names to OpenProject status names. Default:
+
+```js
+module.exports = {
+  "To Do": "New",
+  "In Progress": "In progress",
+  Done: "Closed",
+  Closed: "Closed",
+  Resolved: "Closed",
+};
+```
+
+### `priority-mapping.js`
+Maps Jira priority names to OpenProject priority names. Default:
+
+```js
+module.exports = {
+  Highest: "Immediate",
+  High: "High",
+  Medium: "Normal",
+  Low: "Low",
+  Lowest: "Low",
+};
+```
+
+### `user-mapping.js` / `user-mapping.generated.js`
+Maps Jira user account IDs to OpenProject user IDs.
+
+```bash
+# Interactive generation:
+node generate-user-mapping.js
+```
+
+This writes `user-mapping.generated.js` (gitignored). The tool loads it automatically. Edit `user-mapping.js` to pre-configure mappings manually if preferred.
 
 ## Usage
 

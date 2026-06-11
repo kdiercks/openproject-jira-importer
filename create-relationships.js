@@ -1,5 +1,7 @@
 require("dotenv").config();
 const axios = require("axios");
+const { getJiraEpicLinkFieldId } = require("./jira-client");
+const { JIRA_ID_CUSTOM_FIELD } = require("./openproject-client");
 
 // OpenProject API configuration
 const openProjectConfig = {
@@ -17,8 +19,20 @@ const openProjectApi = axios.create(openProjectConfig);
 // Store issue key to work package ID mapping
 const issueToWorkPackageMap = new Map();
 
+let resolvedEpicLinkField = null;
+
+async function getEpicLinkFieldId() {
+  if (!resolvedEpicLinkField) {
+    resolvedEpicLinkField = await getJiraEpicLinkFieldId();
+  }
+  return resolvedEpicLinkField;
+}
+
 // Track missing relationships to retry later
 const missingRelationships = new Set();
+
+// Stats counters
+let stats = { created: 0, skippedExisting: 0, skippedParent: 0, failed: 0, missing: 0, total: 0 };
 
 /**
  * Defines the priority of relationship types.
@@ -137,9 +151,6 @@ async function checkExistingRelationship(fromId, toId, type) {
       },
     });
 
-    // Log the API response for debugging
-    console.log("API Response:", JSON.stringify(response.data, null, 2));
-
     // If we find any relations matching our criteria, a relationship exists
     const exists = response.data.total > 0;
     console.log(
@@ -219,6 +230,7 @@ async function createRelationship(fromId, toId, type) {
       console.log(
         `Relationship already exists: ${type} from ${fromId} to ${toId}`
       );
+      stats.skippedExisting++;
       return;
     }
 
@@ -234,18 +246,13 @@ async function createRelationship(fromId, toId, type) {
       },
     };
 
-    console.log(
-      "Creating relationship with payload:",
-      JSON.stringify(payload, null, 2)
-    );
-
     // The correct endpoint is /api/v3/work_packages/{id}/relations
     const response = await openProjectApi.post(
       `/work_packages/${fromId}/relations`,
       payload
     );
-    console.log("Creation response:", JSON.stringify(response.data, null, 2));
     console.log(`Created ${type} relationship: ${fromId} -> ${toId}`);
+    stats.created++;
   } catch (error) {
     console.error(
       `Error creating relationship: ${fromId} -> ${toId} ${type} ${error.message}`
@@ -256,18 +263,33 @@ async function createRelationship(fromId, toId, type) {
         JSON.stringify(error.response.data, null, 2)
       );
     }
+    stats.failed++;
   }
 }
 
 async function handleRelationships(issue) {
-  if (!issue.fields.issuelinks && !issue.fields.customfield_10014) return;
+  const epicLinkField = await getEpicLinkFieldId();
+  const epicLinkValue = issue.fields[epicLinkField];
+
+  const linkCount = issue.fields.issuelinks?.length || 0;
+  const firstLinkKey = linkCount > 0
+    ? (issue.fields.issuelinks[0].outwardIssue?.key || issue.fields.issuelinks[0].inwardIssue?.key || "?")
+    : "none";
+  console.log(`handleRelationships for ${issue.key}: ${linkCount} issuelinks, first: ${firstLinkKey}, epic: ${epicLinkValue || "none"}, inMapping: ${issueToWorkPackageMap.has(issue.key)}`);
+
+  if (!issue.fields.issuelinks && !epicLinkValue) return;
 
   const fromWorkPackageId = issueToWorkPackageMap.get(issue.key);
-  if (!fromWorkPackageId) return;
+  if (!fromWorkPackageId) {
+    console.warn(
+      `Source issue ${issue.key} not found in work package mapping — skipping its relationships (${issue.fields.issuelinks?.length || 0} link(s), epic: ${!!epicLinkValue})`
+    );
+    return;
+  }
 
   // Handle epic link first
-  if (issue.fields.customfield_10014) {
-    const epicKey = issue.fields.customfield_10014;
+  if (epicLinkValue) {
+    const epicKey = epicLinkValue;
     const epicWorkPackageId = issueToWorkPackageMap.get(epicKey);
     if (epicWorkPackageId) {
       await createRelationship(fromWorkPackageId, epicWorkPackageId, "partof");
@@ -384,33 +406,95 @@ async function handleRelationships(issue) {
 async function retryMissingRelationships() {
   if (missingRelationships.size === 0) return;
 
-  console.log(
-    `\nRetrying ${missingRelationships.size} missing relationships...`
-  );
-  const retryRelationships = Array.from(missingRelationships).map((r) =>
-    JSON.parse(r)
-  );
-  missingRelationships.clear();
+  let iteration = 0;
+  const maxIterations = 5;
 
-  for (const rel of retryRelationships) {
-    const fromWorkPackageId = issueToWorkPackageMap.get(rel.fromKey);
-    const toWorkPackageId = issueToWorkPackageMap.get(rel.toKey);
+  while (missingRelationships.size > 0 && iteration < maxIterations) {
+    iteration++;
+    const retryBatch = Array.from(missingRelationships).map((r) =>
+      JSON.parse(r)
+    );
+    missingRelationships.clear();
 
-    if (fromWorkPackageId && toWorkPackageId) {
-      try {
-        await createRelationship(fromWorkPackageId, toWorkPackageId, rel.type);
+    const beforeCount = retryBatch.length;
+    let resolved = 0;
+
+    console.log(
+      `\nRetry pass ${iteration}: ${retryBatch.length} missing relationships...`
+    );
+
+    for (const rel of retryBatch) {
+      const fromWorkPackageId = issueToWorkPackageMap.get(rel.fromKey);
+      const toWorkPackageId = issueToWorkPackageMap.get(rel.toKey);
+
+      if (fromWorkPackageId && toWorkPackageId) {
+        try {
+          await createRelationship(
+            fromWorkPackageId,
+            toWorkPackageId,
+            rel.type
+          );
+          resolved++;
+        } catch (error) {
+          console.error(
+            `Failed to create relationship: ${rel.fromKey} ${rel.type} ${rel.toKey}: ${error.message}`
+          );
+          missingRelationships.add(JSON.stringify(rel));
+        }
+      } else {
+        missingRelationships.add(JSON.stringify(rel));
+      }
+    }
+
+    console.log(
+      `Retry pass ${iteration}: resolved ${resolved}, still missing ${missingRelationships.size}`
+    );
+
+    if (resolved === 0 && missingRelationships.size > 0) {
+      console.log(
+        "No progress made — giving up on remaining relationships"
+      );
+      break;
+    }
+  }
+
+  if (missingRelationships.size > 0) {
+    const trueFailures = [];
+    for (const rel of Array.from(missingRelationships).map((r) =>
+      JSON.parse(r)
+    )) {
+      const fromId = issueToWorkPackageMap.get(rel.fromKey);
+      const toId = issueToWorkPackageMap.get(rel.toKey);
+      if (fromId && !toId) {
+        try {
+          const searchRes = await openProjectApi.get("/work_packages", {
+            params: {
+              filters: JSON.stringify([{ [`cf_${JIRA_ID_CUSTOM_FIELD}`]: { operator: "=", values: [rel.toKey] } }]),
+              pageSize: 1,
+            },
+          });
+          const foundWp = searchRes.data._embedded?.elements?.[0];
+          if (foundWp) {
+            const exists = await checkExistingRelationship(fromId, foundWp.id, rel.type);
+            if (exists) continue;
+          }
+        } catch (_) {}
+      }
+      trueFailures.push(rel);
+    }
+    missingRelationships.clear();
+    for (const rel of trueFailures) {
+      missingRelationships.add(JSON.stringify(rel));
+    }
+    if (trueFailures.length > 0) {
+      console.log(
+        `\n=== ${trueFailures.length} relationships could not be created ===`
+      );
+      for (const rel of trueFailures) {
         console.log(
-          `Created relationship: ${rel.fromKey} ${rel.type} ${rel.toKey}`
-        );
-      } catch (error) {
-        console.error(
-          `Failed to create relationship: ${rel.fromKey} ${rel.type} ${rel.toKey}`
+          `  FAILED: ${rel.fromKey} ${rel.type} ${rel.toKey} (fromWP: ${issueToWorkPackageMap.has(rel.fromKey)}, toWP: ${issueToWorkPackageMap.has(rel.toKey)})`
         );
       }
-    } else {
-      console.log(
-        `Still missing work package for relationship: ${rel.fromKey} ${rel.type} ${rel.toKey}`
-      );
     }
   }
 }
@@ -418,21 +502,35 @@ async function retryMissingRelationships() {
 async function createRelationships(issues, issueKeyToWorkPackageIdMap) {
   try {
     console.log("\n=== Creating Relationships ===");
+    console.log(`Mapping has ${Object.keys(issueKeyToWorkPackageIdMap).length} entries`);
+    console.log("Sample mapping entries:", JSON.stringify(Object.entries(issueKeyToWorkPackageIdMap).slice(0, 3)));
 
     // Update the mapping with provided data
     for (const [key, id] of Object.entries(issueKeyToWorkPackageIdMap)) {
       issueToWorkPackageMap.set(key, id);
     }
 
+    // Reset stats
+    stats = { created: 0, skippedExisting: 0, skippedParent: 0, failed: 0, missing: 0, total: issues.length };
+
     // First pass: Create all relationships
-    for (const issue of issues) {
-      await handleRelationships(issue);
+    for (let i = 0; i < issues.length; i++) {
+      await handleRelationships(issues[i]);
+      if ((i + 1) % 500 === 0) {
+        console.log(`Progress: ${i + 1}/${issues.length} issues (created: ${stats.created}, skipped: ${stats.skippedExisting}, failed: ${stats.failed})`);
+      }
     }
 
     // Final pass: Retry any missing relationships
     await retryMissingRelationships();
 
-    console.log("\n=== Relationship Creation Complete ===");
+    console.log("\n=== Relationship Summary ===");
+    console.log(`  Created:  ${stats.created}`);
+    console.log(`  Skipped:  ${stats.skippedExisting} (already exists)`);
+    console.log(`  Failed:   ${stats.failed}`);
+    console.log(`  Missing:  ${missingRelationships.size}`);
+    console.log("================================");
+    console.log("\n=== Relationship Migration Complete ===");
   } catch (error) {
     console.error("\nRelationship creation failed:", error.message);
   }

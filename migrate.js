@@ -1,10 +1,14 @@
 require("dotenv").config();
+require("./logger");
 const inquirer = require("inquirer");
 const { migrateIssues } = require("./index.js");
 const { listProjects } = require("./jira-client");
 const {
   listProjects: listOpenProjectProjects,
 } = require("./openproject-client");
+const { migrateParents } = require("./migrate-parents");
+const { migrateRelationships } = require("./migrate-relationships");
+
 
 async function promptForMigrationOptions() {
   try {
@@ -100,6 +104,42 @@ async function promptForMigrationOptions() {
       isProd = true;
     }
 
+    // Prompt for extra projects for cross-project relationships
+    const { useExtraProjects } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "useExtraProjects",
+        message:
+          "Include work packages from other OpenProject projects for cross-project relationships?",
+        default: false,
+      },
+    ]);
+
+    let extraProjectIds = [];
+    if (useExtraProjects) {
+      const { extraProjectInput } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "extraProjectInput",
+          message:
+            "Enter additional OpenProject project IDs (comma-separated):",
+          validate: (input) => {
+            if (!input.trim()) return "Please enter at least one project ID";
+            const ids = input.split(",").map((id) => parseInt(id.trim(), 10));
+            if (ids.some((id) => isNaN(id)))
+              return "Please enter valid numeric IDs";
+            return true;
+          },
+        },
+      ]);
+      extraProjectIds = extraProjectInput
+        .split(",")
+        .map((id) => parseInt(id.trim(), 10));
+      console.log(
+        `Additional projects for relationships: ${extraProjectIds.join(", ")}`
+      );
+    }
+
     // Prompt for responsible mapping
     const { mapResponsible } = await inquirer.prompt([
       {
@@ -139,7 +179,7 @@ async function promptForMigrationOptions() {
     }
 
     // Start migration
-    console.log("\nStarting migration...");
+    console.log("\nStarting issue migration...");
     await migrateIssues(
       jiraProject,
       openProjectId,
@@ -148,6 +188,22 @@ async function promptForMigrationOptions() {
       skipUpdates,
       mapResponsible
     );
+
+    // Migrate parent-child relationships
+    console.log("\n=== Migrating parent-child relationships ===");
+    const specificIssuesStr = specificIssues ? specificIssues.join(",") : null;
+    await migrateParents(jiraProject, openProjectId, specificIssuesStr);
+
+    // Migrate relationships
+    console.log("\n=== Migrating relationships ===");
+    await migrateRelationships(
+      jiraProject,
+      openProjectId,
+      specificIssues,
+      extraProjectIds
+    );
+
+    console.log("\n=== All migrations complete ===");
   } catch (error) {
     console.error("Error during migration setup:", error.message);
     process.exit(1);
@@ -164,27 +220,52 @@ if (args.length > 0) {
   const specificIssues =
     specificIndex !== -1 ? args[specificIndex + 1].split(",") : null;
   const mapResponsible = !args.includes("--no-responsible"); // Default to true unless --no-responsible is specified
+  const extraIndex = args.indexOf("--extra-projects");
+  const extraProjectIds =
+    extraIndex !== -1
+      ? args[extraIndex + 1].split(",").map((id) => parseInt(id.trim(), 10))
+      : [];
   const jiraProject = args[0];
   const openProjectId = parseInt(args[1]);
 
   if (!jiraProject || !openProjectId) {
     console.log(
-      "Usage: node migrate.js JIRA_PROJECT_KEY OPENPROJECT_ID [--prod] [--skip-updates] [--specific ISSUE1,ISSUE2] [--no-responsible]"
+      "Usage: node migrate.js JIRA_PROJECT_KEY OPENPROJECT_ID [--prod] [--skip-updates] [--specific ISSUE1,ISSUE2] [--no-responsible] [--extra-projects ID1,ID2,...]"
     );
     process.exit(1);
   }
 
-  // Start migration after a delay to allow initialization to complete
-  setTimeout(() => {
-    migrateIssues(
-      jiraProject,
-      openProjectId,
-      isProd,
-      specificIssues,
-      skipUpdates,
-      mapResponsible
-    );
-  }, 2000);
+  (async () => {
+    try {
+      console.log("\nStarting issue migration...");
+      await migrateIssues(
+        jiraProject,
+        openProjectId,
+        isProd,
+        specificIssues,
+        skipUpdates,
+        mapResponsible
+      );
+
+      const specificIssuesStr = specificIssues ? specificIssues.join(",") : null;
+
+      console.log("\n=== Migrating parent-child relationships ===");
+      await migrateParents(jiraProject, openProjectId, specificIssuesStr);
+
+      console.log("\n=== Migrating relationships ===");
+      await migrateRelationships(
+        jiraProject,
+        openProjectId,
+        specificIssues,
+        extraProjectIds
+      );
+
+      console.log("\n=== All migrations complete ===");
+    } catch (error) {
+      console.error("Migration failed:", error.message);
+      process.exit(1);
+    }
+  })();
 } else {
   // Use interactive mode
   promptForMigrationOptions();
