@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./logger");
 const { getAllJiraIssues, getSpecificJiraIssues } = require("./jira-client");
 const {
   getOpenProjectWorkPackages,
@@ -53,11 +54,12 @@ async function migrateParents(jiraProjectKey, openProjectId, specificIssues) {
   let skipped = 0;
   let errors = 0;
 
+  const totalIssues = jiraIssues.length;
   for (const issue of jiraIssues) {
     try {
-      console.log(`\nProcessing ${issue.key}...`);
-      console.log(`\nProcessing Content ${issue}...`);
-      // Check for parent field
+      if (processed % 500 === 0) {
+        console.log(`Progress: ${processed}/${totalIssues} issues (completed: ${completed}, skipped: ${skipped}, errors: ${errors})`);
+      }
       const parentKey = issue.fields.parent?.key;
       if (!parentKey) {
         console.log(`No parent found for ${issue.key}`);
@@ -101,25 +103,29 @@ async function migrateParents(jiraProjectKey, openProjectId, specificIssues) {
   }
 
   // Print summary
-  console.log("\nMigration summary:");
-  console.log(`Total issues processed: ${processed}`);
+  console.log("\n=== Parent Migration Summary ===");
+  console.log(`Total issues processed: ${processed} / ${totalIssues}`);
   console.log(`Completed: ${completed}`);
   console.log(`Skipped (no parent): ${skipped}`);
   console.log(`Errors: ${errors}`);
+  console.log("===============================\n");
 }
 
-// Parse command line arguments
-const jiraProjectKey = process.argv[2];
-const openProjectId = process.argv[3];
-const specificIssues = process.argv[4];
+// Only auto-run when executed directly (not when imported)
+if (require.main === module) {
+  const jiraProjectKey = process.argv[2];
+  const openProjectId = process.argv[3];
+  const specificIssues = process.argv[4];
 
-if (!jiraProjectKey || !openProjectId) {
-  console.error("Please provide a Jira project key and OpenProject ID");
-  console.log(
-    "Usage: node migrate-parents.js PROJECT_KEY PROJECT_ID [ISSUE_KEYS]"
-  );
-  process.exit(1);
+  if (!jiraProjectKey || !openProjectId) {
+    console.error("Please provide a Jira project key and OpenProject ID");
+    console.log(
+      "Usage: node migrate-parents.js PROJECT_KEY PROJECT_ID [ISSUE_KEYS]"
+    );
+    process.exit(1);
+  }
+
+  migrateParents(jiraProjectKey, openProjectId, specificIssues);
 }
 
-// Run the migration
-migrateParents(jiraProjectKey, openProjectId, specificIssues);
+module.exports = { migrateParents };

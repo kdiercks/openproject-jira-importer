@@ -9,6 +9,7 @@ const {
   downloadAttachment,
   listProjects,
   getIssueWatchers,
+  getJiraIssueTypes,
   DEFAULT_FIELDS,
 } = require("./jira-client");
 const { generateMapping } = require("./generate-user-mapping");
@@ -32,6 +33,8 @@ const {
   getWorkPackagePriorities,
   addWatcher,
   getCustomFieldOptionsMap,
+  typeMapping,
+  setTypeMapping,
 } = require("./openproject-client");
 
 // Load custom field mapping (graceful fallback if not configured)
@@ -56,21 +59,14 @@ let userMapping = null;
 
 async function getOpenProjectUserId(jiraUser) {
   if (!jiraUser) {
-    console.log("No Jira user provided");
     return null;
   }
 
   const openProjectUserId = userMapping[jiraUser.accountId];
   if (openProjectUserId) {
-    console.log(
-      `Found OpenProject user ID ${openProjectUserId} for Jira user ${jiraUser.displayName}`
-    );
     return openProjectUserId;
   }
 
-  console.log(
-    `No OpenProject user mapping found for Jira user ${jiraUser.displayName}`
-  );
   return null;
 }
 
@@ -124,10 +120,34 @@ async function migrateIssues(
   const jiraFieldNameToId = await resolveJiraFieldNames(customFieldMapping);
 
   // Get work package types and statuses
-  await getWorkPackageTypes(openProjectId);
+  const opTypes = await getWorkPackageTypes(openProjectId);
   await getWorkPackageStatuses();
   await getWorkPackagePriorities();
   await getOpenProjectUsers();
+
+  // Auto-discover Jira issue types and build the full type mapping
+  const jiraIssueTypes = await getJiraIssueTypes();
+  const finalTypeMapping = {};
+
+  console.log("\nJira → OpenProject type mapping:");
+  for (const jiraType of jiraIssueTypes) {
+    if (typeMapping[jiraType]) {
+      // Manual override from type-mapping.js
+      finalTypeMapping[jiraType] = typeMapping[jiraType];
+      console.log(`  ✓ ${jiraType} → ${typeMapping[jiraType]} (override)`);
+    } else {
+      const match = opTypes.find(
+        (t) => t.name.toLowerCase() === jiraType.toLowerCase()
+      );
+      if (match) {
+        finalTypeMapping[jiraType] = match.name;
+        console.log(`  ✓ ${jiraType} → ${match.name} (auto)`);
+      } else {
+        console.log(`  ✗ ${jiraType} → no match in OpenProject (will default to Task)`);
+      }
+    }
+  }
+  setTypeMapping(finalTypeMapping);
 
   // Fetch custom field options for list/multi_list custom fields
   let cfOptionsMap = null;
@@ -136,8 +156,8 @@ async function migrateIssues(
     .map((m) => m.openProjectField);
   if (listFieldIds.length > 0) {
     console.log("Fetching custom field options from OpenProject...");
-    const firstTypeId = workPackageTypes && workPackageTypes.length > 0
-      ? workPackageTypes[0].id
+    const firstTypeId = opTypes && opTypes.length > 0
+      ? opTypes[0].id
       : null;
     cfOptionsMap = await getCustomFieldOptionsMap(
       listFieldIds,
@@ -176,11 +196,16 @@ async function migrateIssues(
   let processed = 0;
   let skipped = 0;
   let errors = 0;
+  let createdCount = 0;
+  let updatedCount = 0;
   const issueToWorkPackageMap = new Map();
+  const totalJiraIssues = jiraIssues.length;
 
   for (const issue of jiraIssues) {
     try {
-      console.log(`\nProcessing ${issue.key}...`);
+      if (processed % 500 === 0) {
+        console.log(`Progress: ${processed}/${totalJiraIssues} issues (created: ${createdCount}, skipped: ${skipped}, errors: ${errors})`);
+      }
 
       // Check if work package already exists
       let existingWorkPackage = null;
@@ -194,9 +219,18 @@ async function migrateIssues(
       }
 
       if (existingWorkPackage && skipUpdates) {
-        console.log(
-          `Skipping ${issue.key} - already exists as work package ${existingWorkPackage.id}`
-        );
+        const jiraIdField = JIRA_ID_CUSTOM_FIELD;
+        if (jiraIdField) {
+          try {
+            await updateWorkPackage(existingWorkPackage.id, {
+              [`customField${jiraIdField}`]: issue.key,
+            });
+          } catch (error) {
+            console.error(
+              `Failed to set JIRA ID on existing work package ${existingWorkPackage.id}: ${error.message}`
+            );
+          }
+        }
         issueToWorkPackageMap.set(issue.key, existingWorkPackage.id);
         skipped++;
         continue;
@@ -287,9 +321,41 @@ async function migrateIssues(
           delete payload._links.status;
         }
         workPackage = await updateWorkPackage(existingWorkPackage.id, payload);
+        updatedCount++;
       } else {
         console.log("Creating new work package");
-        workPackage = await createWorkPackage(openProjectId, payload);
+        try {
+          workPackage = await createWorkPackage(openProjectId, payload);
+        } catch (createError) {
+          if (
+            createError.response?.status === 422 &&
+            createError.response?.data?._embedded?.details?.attribute === "responsible"
+          ) {
+            console.log(
+              `User ${responsibleId} is not allowed to be Accountable, retrying without responsible field`
+            );
+            delete payload._links.responsible;
+            workPackage = await createWorkPackage(openProjectId, payload);
+          } else {
+            throw createError;
+          }
+        }
+        createdCount++;
+
+        // Ensure Jira ID is set via PATCH in case the creation payload
+        // didn't persist it (e.g., custom field not in form configuration).
+        // OpenProject's PATCH endpoint is more permissive than creation.
+        if (jiraIdField && !workPackage[`customField${jiraIdField}`]) {
+          try {
+            workPackage = await updateWorkPackage(workPackage.id, {
+              [`customField${jiraIdField}`]: issue.key,
+            });
+          } catch (patchError) {
+            console.error(
+              `Failed to set Jira ID on work package ${workPackage.id}: ${patchError.message}`
+            );
+          }
+        }
       }
 
       issueToWorkPackageMap.set(issue.key, workPackage.id);
@@ -380,11 +446,13 @@ async function migrateIssues(
     fs.rmSync(tempDir, { recursive: true });
   }
 
-  console.log("\nMigration summary:");
-  console.log(`Total issues processed: ${processed + skipped}`);
-  console.log(`Completed: ${processed}`);
-  console.log(`Skipped: ${skipped}`);
+  console.log("\n=== Migration Summary ===");
+  console.log(`Total: ${processed + skipped} / ${totalJiraIssues}`);
+  console.log(`Created: ${createdCount}`);
+  console.log(`Updated: ${updatedCount}`);
+  console.log(`Skipped (existing): ${skipped}`);
   console.log(`Errors: ${errors}`);
+  console.log("=========================\n");
 
   return issueToWorkPackageMap;
 }
@@ -441,6 +509,9 @@ function extractJiraValue(value) {
   if (typeof value === "object") {
     if (value.value !== undefined) return value.value;
     if (value.name !== undefined) return value.name;
+    if (value.content && typeof value.type === "string") {
+      return convertAtlassianDocumentToText(value);
+    }
     return value;
   }
   return value;

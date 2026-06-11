@@ -4,14 +4,10 @@ const path = require("path");
 const fs = require("fs");
 
 
-// Force console.log to also write to stderr
-console.log = (...args) => {
-  process.stderr.write(args.join(" ") + "\n");
-};
 
 // Jira API configuration
 const jiraConfig = {
-  baseURL: `https://${process.env.JIRA_HOST}/rest/api/2`,
+  baseURL: `https://${process.env.JIRA_HOST}/rest/api/3`,
   auth: {
     username: process.env.JIRA_EMAIL,
     password: process.env.JIRA_API_TOKEN,
@@ -47,7 +43,7 @@ async function getAllJiraIssues(projectKey, fields = DEFAULT_FIELDS.join(",")) {
   try {
     let allIssues = [];
     const maxResults = 100;
-    let nextPageToken = undefined;
+    let nextPageToken = null;
 
     // Validate project key
     if (!projectKey) {
@@ -70,10 +66,11 @@ async function getAllJiraIssues(projectKey, fields = DEFAULT_FIELDS.join(",")) {
           maxResults,
           fields: fields.split ? fields.split(",") : fields,
         };
-        if (nextPageToken) body.nextPageToken = nextPageToken;
+        if (nextPageToken) {
+          body.nextPageToken = nextPageToken;
+        }
         const response = await jiraApi.post("/search/jql", body);
-        console.warn(`Response: ${response.body}`);
-        const { issues, nextPageToken: newToken } = response.data;
+        const { issues, isLast, nextPageToken: newNextPageToken } = response.data;
 
         if (!issues || issues.length === 0) {
           if (allIssues.length === 0) {
@@ -88,13 +85,16 @@ async function getAllJiraIssues(projectKey, fields = DEFAULT_FIELDS.join(",")) {
         }
 
         allIssues = allIssues.concat(issues);
+        console.log(
+          `Retrieved ${allIssues.length} issues`
+        );
 
-        if (!newToken) {
+        if (isLast) {
           console.log(`Retrieved all ${allIssues.length} issues`);
           break;
         }
 
-        nextPageToken = newToken;
+        nextPageToken = newNextPageToken;
         page++;
       } catch (error) {
         if (error.response?.status === 400) {
@@ -145,7 +145,7 @@ async function getSpecificJiraIssues(
 async function getJiraUserEmail(accountId) {
   try {
     console.log(`Fetching email for Jira user with accountId: ${accountId}`);
-    const response = await jiraApi.get(`/user/properties/email`, {
+    const response = await jiraApi.get(`/user/email`, {
       params: {
         accountId: accountId,
       },
@@ -251,9 +251,8 @@ async function getJiraEpicLinkFieldId() {
   }
   try {
     const fields = await getJiraCustomFields();
-    const epicLink = fields.find(
-      (f) => f.name === "Epic Link" || f.name === "Epic Name"
-    );
+    const epicLink = fields.find((f) => f.name === "Epic Link")
+      || fields.find((f) => f.name === "Epic Name");
     if (epicLink) {
       jiraEpicLinkFieldId = epicLink.id;
       return jiraEpicLinkFieldId;
@@ -269,6 +268,16 @@ async function buildDefaultFieldString() {
   const epicLinkId = await getJiraEpicLinkFieldId();
   const fields = [...DEFAULT_FIELDS, epicLinkId];
   return fields.join(",");
+}
+
+async function getJiraIssueTypes() {
+  try {
+    const response = await jiraApi.get("/issuetype");
+    return response.data.map((t) => t.name);
+  } catch (error) {
+    console.error("Error fetching Jira issue types:", error.message);
+    return [];
+  }
 }
 
 async function getIssueWatchers(issueKey) {
@@ -310,5 +319,6 @@ module.exports = {
   getJiraCustomFields,
   getJiraEpicLinkFieldId,
   buildDefaultFieldString,
+  getJiraIssueTypes,
   DEFAULT_FIELDS,
 };

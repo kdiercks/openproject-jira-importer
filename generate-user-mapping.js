@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./logger");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");

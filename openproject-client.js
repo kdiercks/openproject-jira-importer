@@ -42,33 +42,41 @@ let workPackageStatuses = null;
 let openProjectUsers = null;
 let workPackagePriorities = null;
 
-// Map Jira issue types to OpenProject types
-const typeMapping = {
-  Task: "Task",
-  Story: "User story",
-  Bug: "Bug",
-  Epic: "Epic",
-  Feature: "Feature",
-  Milestone: "Milestone",
-};
+// Load mapping configs with graceful fallback to defaults
+function loadMappingConfig(name, defaults) {
+  try {
+    const cfg = require(`./${name}`);
+    if (cfg && typeof cfg === "object" && !Array.isArray(cfg)) {
+      console.log(`Loaded ${name} with ${Object.keys(cfg).length} mapping(s)`);
+      return cfg;
+    }
+  } catch (e) {
+    // Config file not present – use defaults
+  }
+  return { ...defaults };
+}
 
-// Map Jira statuses to OpenProject statuses
-const statusMapping = {
+let typeMapping = loadMappingConfig("type-mapping", {});
+
+function setTypeMapping(mapping) {
+  typeMapping = mapping;
+}
+
+const statusMapping = loadMappingConfig("status-mapping", {
   "To Do": "New",
   "In Progress": "In progress",
   Done: "Closed",
   Closed: "Closed",
   Resolved: "Closed",
-};
+});
 
-// Map Jira priorities to OpenProject priorities
-const priorityMapping = {
+const priorityMapping = loadMappingConfig("priority-mapping", {
   Highest: "Immediate",
   High: "High",
   Medium: "Normal",
   Low: "Low",
   Lowest: "Low",
-};
+});
 
 async function getOpenProjectWorkPackages(projectId) {
   console.log("\n=== Caching OpenProject Work Packages ===");
@@ -166,8 +174,70 @@ async function getOpenProjectWorkPackages(projectId) {
 
 async function setParentWorkPackage(childId, parentId) {
   try {
-    // Get current work package to get its lock version
+    // Get current work package to check existing parent
     const currentWP = await openProjectApi.get(`/work_packages/${childId}`);
+    const currentParentHref = currentWP.data._links?.parent?.href;
+    const currentParentId = currentParentHref?.split("/").pop();
+
+    if (currentParentId === parentId?.toString()) {
+      console.log(
+        `Work package ${childId} already has parent ${parentId}, skipping`
+      );
+      return;
+    }
+
+    if (parentId?.toString() === childId?.toString()) {
+      console.log(
+        `Cannot set parent: work package ${childId} cannot be its own parent`
+      );
+      return;
+    }
+
+    // If no parentId was passed, we're clearing the parent
+    if (parentId === null) {
+      await openProjectApi.patch(`/work_packages/${childId}`, {
+        lockVersion: currentWP.data.lockVersion,
+        _links: {
+          parent: null,
+        },
+      });
+      return;
+    }
+
+    // Check if proposed parent already has this WP as its parent (would create cycle)
+    try {
+      const parentWP = await openProjectApi.get(`/work_packages/${parentId}`);
+      const parentParentHref = parentWP.data._links?.parent?.href;
+      const parentParentId = parentParentHref?.split("/").pop();
+      if (parentParentId === childId?.toString()) {
+        console.log(
+          `Cannot set parent: work package ${childId} is already the parent of ${parentId} (would create cycle)`
+        );
+        return;
+      }
+    } catch (e) {
+      // If fetching parent fails, proceed anyway (attempt may also fail)
+    }
+
+    // Check if a relation exists between child and proposed parent (e.g. "partof" from epic links)
+    // OpenProject rejects setting a parent if a relation already exists between the same pair
+    try {
+      const filter = { operator: "=", values: [childId.toString(), parentId.toString()] };
+      const relResponse = await openProjectApi.get("/relations", {
+        params: {
+          filters: JSON.stringify([{ from: filter }, { to: filter }]),
+        },
+      });
+      const existingRels = relResponse.data._embedded?.elements || [];
+      for (const rel of existingRels) {
+        console.log(
+          `Deleting existing relation ID ${rel.id} (${rel.type}) between ${childId} and ${parentId} before setting parent`
+        );
+        await openProjectApi.delete(`/relations/${rel.id}`);
+      }
+    } catch (e) {
+      // If relation check fails, proceed anyway (PATCH may also fail)
+    }
 
     await openProjectApi.patch(`/work_packages/${childId}`, {
       lockVersion: currentWP.data.lockVersion,
@@ -206,6 +276,12 @@ async function createWorkPackage(projectId, payload) {
     return response.data;
   } catch (error) {
     console.error("Error creating work package:", error.message);
+    if (error.response?.data) {
+      console.error(
+        "Error details:",
+        JSON.stringify(error.response.data, null, 2)
+      );
+    }
     throw error;
   }
 }
@@ -326,12 +402,23 @@ async function addWatcher(workPackageId, userId) {
 
 async function listProjects() {
   try {
-    const response = await openProjectApi.get("/projects");
+    let allProjects = [];
+    let nextUrl = "/projects?pageSize=500";
+
+    while (nextUrl) {
+      const response = await openProjectApi.get(nextUrl);
+      const projects = response.data._embedded.elements || [];
+      allProjects = allProjects.concat(projects);
+
+      const nextLink = response.data._links?.nextBy?.href;
+      nextUrl = nextLink || null;
+    }
+
     console.log("\nAvailable OpenProject Projects:");
-    response.data._embedded.elements.forEach((project) => {
+    allProjects.forEach((project) => {
       console.log(`- ID: ${project.id}, Name: ${project.name}`);
     });
-    return response.data._embedded.elements;
+    return allProjects;
   } catch (error) {
     console.error("Error listing projects:", error.message);
     throw error;
@@ -598,6 +685,7 @@ module.exports = {
   getWorkPackageTypeName,
   getWorkPackageStatusName,
   typeMapping,
+  setTypeMapping,
   statusMapping,
   priorityMapping,
   JIRA_ID_CUSTOM_FIELD,
