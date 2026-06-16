@@ -611,55 +611,89 @@ function getWorkPackageStatusName(statusId) {
   return status ? status.name : "Unknown";
 }
 
-async function getCustomFieldOptionsMap(customFieldIds, projectId, typeId) {
+async function getProjectCategories(projectId) {
+  try {
+    const response = await openProjectApi.get(`/workspaces/${projectId}/categories`);
+    return response.data._embedded.elements || [];
+  } catch (error) {
+    console.error("Error fetching project categories:", error.message);
+    return [];
+  }
+}
+
+async function createCategory(projectId, name) {
+  try {
+    const response = await openProjectApi.post("/categories", {
+      name,
+      _links: {
+        project: { href: `/api/v3/projects/${projectId}` }
+      }
+    });
+    console.log(`Created category: ${name} (ID: ${response.data.id})`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error creating category "${name}":`, error.message);
+    if (error.response) {
+      console.error(`Status: ${error.response.status}, Body: ${JSON.stringify(error.response.data)}`);
+    }
+    return null;
+  }
+}
+
+async function getCustomFieldOptionsMap(customFieldIds, projectId, typeIds) {
   const optionsMap = {};
   if (customFieldIds.length === 0) return optionsMap;
 
-  try {
-    const response = await openProjectApi.post("/work_packages/form", {
-      _links: {
-        project: { href: `/api/v3/projects/${projectId}` },
-        type: { href: `/api/v3/types/${typeId}` },
-      },
-    });
-    const schema = response.data._embedded?.schema;
-    if (!schema) {
-      console.warn("Could not retrieve work package form schema");
-      return optionsMap;
-    }
+  const remaining = new Set(customFieldIds);
 
-    for (const fieldId of customFieldIds) {
-      const key = `customField${fieldId}`;
-      const fieldSchema = schema[key];
-      if (!fieldSchema) {
-        console.warn(`  Custom field ${fieldId}: not found in work package schema`);
+  for (const typeId of typeIds) {
+    if (remaining.size === 0) break;
+
+    try {
+      const response = await openProjectApi.post("/work_packages/form", {
+        _links: {
+          project: { href: `/api/v3/projects/${projectId}` },
+          type: { href: `/api/v3/types/${typeId}` },
+        },
+      });
+      const schema = response.data._embedded?.schema;
+      if (!schema) {
+        console.warn(`Could not retrieve work package form schema for type ${typeId}`);
         continue;
       }
 
-      const allowedValues = fieldSchema._links?.allowedValues;
-      if (allowedValues && allowedValues.length > 0) {
-        const valueToHref = {};
-        for (const av of allowedValues) {
-          const value = av.title;
-          if (value) {
-            valueToHref[value] = av.href;
+      for (const fieldId of [...remaining]) {
+        const key = `customField${fieldId}`;
+        const fieldSchema = schema[key];
+        if (!fieldSchema) continue;
+
+        const allowedValues = fieldSchema._links?.allowedValues;
+        if (allowedValues && allowedValues.length > 0) {
+          const valueToHref = {};
+          for (const av of allowedValues) {
+            const value = av.title;
+            if (value) {
+              valueToHref[value] = av.href;
+            }
           }
+          optionsMap[fieldId] = valueToHref;
+          remaining.delete(fieldId);
+          console.log(
+            `  Custom field ${fieldId}: found ${Object.keys(valueToHref).length} option(s) (type ${typeId})`
+          );
         }
-        optionsMap[fieldId] = valueToHref;
-        console.log(
-          `  Custom field ${fieldId}: found ${Object.keys(valueToHref).length} option(s)`
-        );
-      } else {
-        console.warn(
-          `  Custom field ${fieldId}: no allowedValues in schema`
-        );
       }
+    } catch (error) {
+      console.warn(
+        `Could not fetch options via form for type ${typeId}: ${error.message}`
+      );
     }
-  } catch (error) {
-    console.warn(
-      `Could not fetch custom field options via form: ${error.message}`
-    );
   }
+
+  for (const fieldId of remaining) {
+    console.warn(`  Custom field ${fieldId}: not found in any type schema`);
+  }
+
   return optionsMap;
 }
 
@@ -691,4 +725,6 @@ module.exports = {
   JIRA_ID_CUSTOM_FIELD,
   requireJiraIdField,
   getCustomFieldOptionsMap,
+  getProjectCategories,
+  createCategory,
 };

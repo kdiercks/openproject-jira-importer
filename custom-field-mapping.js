@@ -49,4 +49,14 @@ module.exports = [
     openProjectField: 22,
     type: "text",
   },
+  {
+    jiraField: "customfield_10224",
+    openProjectField: 28,
+    type: "string",
+  },
+  {
+    jiraField: "customfield_10223",
+    openProjectField: 29,
+    type: "string",
+  },
 ];

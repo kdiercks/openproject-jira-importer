@@ -36,6 +36,7 @@ const DEFAULT_FIELDS = [
   "created",
   "parent",
   "watches",
+  "components",
 ];
 
 async function getAllJiraIssues(projectKey, fields = DEFAULT_FIELDS.join(",")) {

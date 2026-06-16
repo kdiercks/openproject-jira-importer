@@ -35,6 +35,7 @@ const {
   getCustomFieldOptionsMap,
   typeMapping,
   setTypeMapping,
+  getProjectCategories,
 } = require("./openproject-client");
 
 // Load custom field mapping (graceful fallback if not configured)
@@ -156,13 +157,13 @@ async function migrateIssues(
     .map((m) => m.openProjectField);
   if (listFieldIds.length > 0) {
     console.log("Fetching custom field options from OpenProject...");
-    const firstTypeId = opTypes && opTypes.length > 0
-      ? opTypes[0].id
-      : null;
+    const typeIds = opTypes && opTypes.length > 0
+      ? opTypes.map((t) => t.id)
+      : [];
     cfOptionsMap = await getCustomFieldOptionsMap(
       listFieldIds,
       openProjectId,
-      firstTypeId
+      typeIds
     );
     console.log(
       `Fetched options for ${Object.keys(cfOptionsMap).length} custom field(s)`
@@ -191,6 +192,45 @@ async function migrateIssues(
 
   console.log(`Found ${jiraIssues.length} Jira issues to process`);
   console.log("Issues will be processed in chronological order (oldest first)");
+
+  // Build component-to-category mapping: use the form endpoint to discover
+  // allowed category values (similar to how custom field options are resolved).
+  const componentToCategoryMap = new Map();
+  const componentNames = new Set();
+  for (const issue of jiraIssues) {
+    if (issue.fields.components && issue.fields.components.length > 0) {
+      for (const component of issue.fields.components) {
+        componentNames.add(component.name);
+      }
+    }
+  }
+
+  if (componentNames.size > 0) {
+    console.log(`\nFound ${componentNames.size} unique Jira component(s): ${[...componentNames].join(", ")}`);
+
+    // Fetch allowed category hrefs from the form endpoint
+    const allowedCategories = await getProjectCategories(openProjectId);
+    const categoryByName = new Map(allowedCategories.map(c => [c.name, c]));
+
+    const missing = [];
+    for (const name of componentNames) {
+      const cat = categoryByName.get(name);
+      if (cat) {
+        componentToCategoryMap.set(name, `/api/v3/categories/${cat.id}`);
+        console.log(`  ✓ Mapped component "${name}" → /api/v3/categories/${cat.id}`);
+      } else {
+        missing.push(name);
+      }
+    }
+
+    if (missing.length > 0) {
+      console.warn(
+        `\n  ⚠ The following Jira components have no matching OpenProject category ` +
+        `in this project. Create them manually in OpenProject (Project settings → ` +
+        `Categories) and re-run: ${missing.join(", ")}`
+      );
+    }
+  }
 
   // Process each issue
   let processed = 0;
@@ -311,6 +351,21 @@ async function migrateIssues(
         payload._links.responsible = {
           href: `/api/v3/users/${responsibleId}`,
         };
+      }
+
+      // Map first Jira component to OpenProject category
+      if (issue.fields.components && issue.fields.components.length > 0) {
+        const firstComponent = issue.fields.components[0].name;
+        const categoryHref = componentToCategoryMap.get(firstComponent);
+        if (categoryHref) {
+          payload._links.category = { href: categoryHref };
+          console.log(`Setting category for issue ${issue.key}: ${firstComponent} → ${categoryHref}`);
+        }
+        if (issue.fields.components.length > 1) {
+          console.warn(
+            `Issue ${issue.key} has ${issue.fields.components.length} components; only "${firstComponent}" mapped to category`
+          );
+        }
       }
 
       let workPackage;
@@ -512,7 +567,14 @@ function extractJiraValue(value) {
     if (value.content && typeof value.type === "string") {
       return convertAtlassianDocumentToText(value);
     }
-    return value;
+    if (value.text !== undefined) return value.text;
+    if (value.displayName !== undefined) return value.displayName;
+    if (value.title !== undefined) return value.title;
+    if (Object.keys(value).length === 0) return null;
+    try {
+      return JSON.stringify(value);
+    } catch (e) {}
+    return null;
   }
   return value;
 }
@@ -541,8 +603,15 @@ function buildCustomFieldPayload(issue, mappings, userMapping, cfOptionsMap) {
     switch (type) {
       case "string":
       case "text": {
-        const val = extractJiraValue(jiraValue);
+        let val = extractJiraValue(jiraValue);
         if (val !== null && val !== undefined && val !== "") {
+          if (typeof val === "object") {
+            try {
+              val = JSON.stringify(val);
+            } catch (e) {
+              val = String(val);
+            }
+          }
           fields[key] = String(val);
         }
         break;
@@ -647,19 +716,59 @@ function convertAtlassianDocumentToText(document) {
   if (typeof document === "string") return document;
 
   try {
-    if (document.content) {
-      return document.content
-        .map((block) => block.content?.map((c) => c.text).join("") || "")
-        .join("\n")
-        .trim();
-    }
-    return "";
+    return extractTextFromAdfNode(document).trim();
   } catch (error) {
     console.error("Error converting Atlassian document:", error);
     return "";
   }
 }
 
+function extractTextFromAdfNode(node) {
+  if (!node || typeof node !== "object") return "";
+  if (node.type === "text") return node.text || "";
+  if (node.type === "hardBreak") return "\n";
+  if (node.type === "mention") return node.attrs?.text || node.text || "";
+
+  if (node.type === "bulletList" || node.type === "orderedList") {
+    const items = (node.content || [])
+      .map((item) => extractTextFromAdfNode(item))
+      .filter(Boolean);
+    return items.map((item) => `- ${item}`).join("\n");
+  }
+
+  if (node.type === "listItem") {
+    return (node.content || [])
+      .map((child) => extractTextFromAdfNode(child))
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (node.type === "codeBlock") {
+    return (node.content || [])
+      .map((child) => extractTextFromAdfNode(child))
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (node.type === "blockquote") {
+    return (node.content || [])
+      .map((child) => extractTextFromAdfNode(child))
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  if (node.content) {
+    const separator = node.type === "doc" ? "\n" : "";
+    return (node.content || [])
+      .map((child) => extractTextFromAdfNode(child))
+      .filter(Boolean)
+      .join(separator);
+  }
+
+  return "";
+}
+
 module.exports = {
   migrateIssues,
+  extractJiraValue,
 };
