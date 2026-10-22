@@ -8,6 +8,10 @@ const {
 } = require("./openproject-client");
 const { migrateParents } = require("./migrate-parents");
 const { migrateRelationships } = require("./migrate-relationships");
+const { migrateTestSteps } = require("./migrate-test-steps");
+const { migrateTestExecutions } = require("./migrate-test-executions");
+const { writeMissingReport } = require("./missing-report");
+const { isXrayConfigured } = require("./xray-client");
 
 
 async function promptForMigrationOptions() {
@@ -150,6 +154,35 @@ async function promptForMigrationOptions() {
       },
     ]);
 
+    let runTestSteps = false;
+    let runTestExecutions = false;
+    if (isXrayConfigured()) {
+      const answer = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "runTestSteps",
+          message: "Migrate XRay test steps?",
+          default: true,
+        },
+      ]);
+      runTestSteps = answer.runTestSteps;
+
+      const executionAnswer = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "runTestExecutions",
+          message:
+            "Link XRay Test Executions to their Tests and Test Plans?",
+          default: true,
+        },
+      ]);
+      runTestExecutions = executionAnswer.runTestExecutions;
+    } else {
+      console.log(
+        "\nXRay test steps and execution links will be skipped: XRAY_CLIENT_ID/XRAY_CLIENT_SECRET are not configured."
+      );
+    }
+
     // Confirm migration settings
     console.log("\nMigration Settings:");
     console.log(`- Jira Project: ${jiraProject}`);
@@ -163,6 +196,10 @@ async function promptForMigrationOptions() {
       console.log(`- Specific Issues: ${specificIssues.join(", ")}`);
     }
     console.log(`- Map Responsible: ${mapResponsible ? "Yes" : "No"}`);
+    console.log(`- Migrate XRay Test Steps: ${runTestSteps ? "Yes" : "No"}`);
+    console.log(
+      `- Link XRay Test Executions: ${runTestExecutions ? "Yes" : "No"}`
+    );
 
     const { confirm } = await inquirer.prompt([
       {
@@ -203,6 +240,28 @@ async function promptForMigrationOptions() {
       extraProjectIds
     );
 
+    if (runTestSteps) {
+      console.log("\n=== Migrating XRay test steps ===");
+      await migrateTestSteps(openProjectId, {
+        jiraProjectKey: jiraProject,
+        issueKeys: specificIssues,
+      });
+    }
+
+    if (runTestExecutions) {
+      console.log("\n=== Linking XRay test executions ===");
+      await migrateTestExecutions(openProjectId, {
+        jiraProjectKey: jiraProject,
+      });
+    }
+
+    console.log("\n=== Checking for missing Jira cases ===");
+    try {
+      await writeMissingReport(jiraProject, openProjectId);
+    } catch (error) {
+      console.error(`Missing case report failed: ${error.message}`);
+    }
+
     console.log("\n=== All migrations complete ===");
   } catch (error) {
     console.error("Error during migration setup:", error.message);
@@ -220,6 +279,11 @@ if (args.length > 0) {
   const specificIssues =
     specificIndex !== -1 ? args[specificIndex + 1].split(",") : null;
   const mapResponsible = !args.includes("--no-responsible"); // Default to true unless --no-responsible is specified
+  const runTestManagement = args.includes("--test-management");
+  const runTestSteps =
+    runTestManagement || args.includes("--test-steps");
+  const runTestExecutions =
+    runTestManagement || args.includes("--test-executions");
   const extraIndex = args.indexOf("--extra-projects");
   const extraProjectIds =
     extraIndex !== -1
@@ -230,7 +294,7 @@ if (args.length > 0) {
 
   if (!jiraProject || !openProjectId) {
     console.log(
-      "Usage: node migrate.js JIRA_PROJECT_KEY OPENPROJECT_ID [--prod] [--skip-updates] [--specific ISSUE1,ISSUE2] [--no-responsible] [--extra-projects ID1,ID2,...]"
+      "Usage: node migrate.js JIRA_PROJECT_KEY OPENPROJECT_ID [--prod] [--skip-updates] [--specific ISSUE1,ISSUE2] [--no-responsible] [--extra-projects ID1,ID2,...] [--test-steps] [--test-executions] [--test-management]"
     );
     process.exit(1);
   }
@@ -259,6 +323,34 @@ if (args.length > 0) {
         specificIssues,
         extraProjectIds
       );
+
+      if (runTestSteps) {
+        console.log("\n=== Migrating XRay test steps ===");
+        await migrateTestSteps(openProjectId, {
+          jiraProjectKey: jiraProject,
+          issueKeys: specificIssues,
+        });
+      }
+
+      if (runTestExecutions) {
+        console.log("\n=== Linking XRay test executions ===");
+        await migrateTestExecutions(openProjectId, {
+          jiraProjectKey: jiraProject,
+        });
+      }
+
+      if (!runTestSteps && !runTestExecutions && isXrayConfigured()) {
+        console.log(
+          "\nXRay test management migration was not requested. Re-run with --test-steps, --test-executions, or --test-management."
+        );
+      }
+
+      console.log("\n=== Checking for missing Jira cases ===");
+      try {
+        await writeMissingReport(jiraProject, openProjectId);
+      } catch (error) {
+        console.error(`Missing case report failed: ${error.message}`);
+      }
 
       console.log("\n=== All migrations complete ===");
     } catch (error) {

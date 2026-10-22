@@ -236,6 +236,7 @@ async function migrateIssues(
   let processed = 0;
   let skipped = 0;
   let errors = 0;
+  let attachmentErrors = 0;
   let createdCount = 0;
   let updatedCount = 0;
   const issueToWorkPackageMap = new Map();
@@ -244,7 +245,7 @@ async function migrateIssues(
   for (const issue of jiraIssues) {
     try {
       if (processed % 500 === 0) {
-        console.log(`Progress: ${processed}/${totalJiraIssues} issues (created: ${createdCount}, skipped: ${skipped}, errors: ${errors})`);
+          console.log(`Progress: ${processed}/${totalJiraIssues} issues (created: ${createdCount}, skipped: ${skipped}, errors: ${errors}, attachmentErrors: ${attachmentErrors})`);
       }
 
       // Check if work package already exists
@@ -435,6 +436,7 @@ async function migrateIssues(
           const downloaded = await downloadAttachment(attachment.content, tempFilePath);
           if (!downloaded) {
             console.error(`Skipping upload for ${attachment.filename} due to download failure`);
+            attachmentErrors++;
             continue;
           }
           await uploadAttachment(
@@ -507,7 +509,28 @@ async function migrateIssues(
   console.log(`Updated: ${updatedCount}`);
   console.log(`Skipped (existing): ${skipped}`);
   console.log(`Errors: ${errors}`);
+  console.log(`Attachment Errors: ${attachmentErrors}`);
   console.log("=========================\n");
+  
+  // Write detailed error log
+  const errorLogPath = path.join(__dirname, "logs", `migration-errors-${Date.now()}.log`);
+  const errorLogStream = fs.createWriteStream(errorLogPath, { flags: "a" });
+  
+  errorLogStream.write("=== Migration Error Summary ===\n");
+  errorLogStream.write(`Timestamp: ${new Date().toISOString()}\n`);
+  errorLogStream.write(`Total Issues Processed: ${processed + skipped}\n`);
+  errorLogStream.write(`Total Errors: ${errors}\n`);
+  errorLogStream.write(`Attachment Download Failures: ${attachmentErrors}\n`);
+  errorLogStream.write("\n=== Error Details ===\n");
+  
+  // Note: For actual error details, we would need to track them during processing
+  // This is a placeholder that can be expanded to log specific errors
+  errorLogStream.write("Note: Detailed error tracking requires additional implementation.\n");
+  errorLogStream.write("This log file provides a summary of error counts.\n");
+  errorLogStream.write("For detailed error information, check the main migration log.\n");
+  errorLogStream.end();
+  
+  console.log(`\nError summary written to: ${errorLogPath}`);
 
   return issueToWorkPackageMap;
 }

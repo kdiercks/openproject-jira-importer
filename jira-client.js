@@ -161,17 +161,55 @@ async function getJiraUserEmail(accountId) {
 
 async function downloadAttachment(url, filePath) {
   try {
-    const response = await downloadClient.get(url);
+    let fullUrl = url;
+    
+    // Handle different URL formats from Jira API
+    if (!url) {
+      throw new Error('Attachment URL is empty');
+    }
+    
+    // If URL is already absolute (starts with http/https), use as-is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      fullUrl = url;
+      // Check if it's a Jira v3 attachment/content URL and convert to download URL
+      if (fullUrl.includes('/rest/api/3/attachment/content/')) {
+        fullUrl = fullUrl.replace('/rest/api/3/attachment/content/', '/rest/api/3/attachment/').replace('/download', '');
+      }
+    }
+    // If URL starts with /, it's a relative path from Jira API
+    else if (url.startsWith('/')) {
+      fullUrl = `https://${process.env.JIRA_HOST}${url}`;
+    }
+    // If URL looks like an attachment ID (just numbers), construct proper download URL
+    else if (/^\d+$/.test(url)) {
+      fullUrl = `https://${process.env.JIRA_HOST}/rest/api/3/attachment/${url}/download`;
+    }
+    // Otherwise, try to construct the download URL
+    else {
+      // Check if it's already a path that might contain /rest/api/3
+      if (url.includes('/rest/api/3/')) {
+        // If it's a full path like "/rest/api/3/...", use it directly
+        // If it's a partial path like "rest/api/3/...", prepend slash
+        fullUrl = `https://${process.env.JIRA_HOST}${url.startsWith('/') ? url : '/' + url}`;
+      } else {
+        fullUrl = `https://${process.env.JIRA_HOST}/rest/api/3/attachment/${url}/download`;
+      }
+    }
+    
+    console.log(`Downloading attachment from: ${fullUrl}`);
+    const response = await downloadClient.get(fullUrl);
     const tempDir = path.dirname(filePath);
 	
-    console.error(url + " " + filePath + "->" + tempDir);
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
     fs.writeFileSync(filePath, response.data);
     return filePath;
   } catch (error) {
-    console.error(`Error downloading attachment: ${error.message}`);
+    console.error(`Error downloading attachment from ${url}: ${error.message}`);
+    if (error.response) {
+      console.error(`Status: ${error.response.status}, URL: ${error.response.config?.url}`);
+    }
     return null;
   }
 }

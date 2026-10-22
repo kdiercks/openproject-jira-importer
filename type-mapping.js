@@ -21,4 +21,5 @@
 module.exports = {
   Story: "User story",
   Requirement: "Requirement",
+  "Test Case": "Test",
 };

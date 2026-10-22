@@ -9,6 +9,9 @@
     "generate-mapping": "node generate-user-mapping.js",
     "migrate-parents": "node migrate-parents.js",
     "migrate-relationships": "node migrate-relationships.js",
+    "migrate-test-steps": "node migrate-test-steps.js",
+    "migrate-test-executions": "node migrate-test-executions.js",
+    "missing-report": "node missing-report.js",
     "remove-duplicates": "node remove-duplicates.js"
   },
   "keywords": [

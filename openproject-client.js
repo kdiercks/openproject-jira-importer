@@ -172,6 +172,85 @@ async function getOpenProjectWorkPackages(projectId) {
   return workPackageMap;
 }
 
+async function getAllWorkPackages(projectId, pageSize = 200) {
+  let page = 1;
+  let total = null;
+  const allWorkPackages = [];
+
+  while (true) {
+    const response = await openProjectApi.get("/work_packages", {
+      params: {
+        filters: JSON.stringify([
+          { project: { operator: "=", values: [projectId.toString()] } },
+        ]),
+        offset: page,
+        pageSize,
+        sortBy: JSON.stringify([["id", "asc"]]),
+      },
+    });
+
+    if (total === null) {
+      total = parseInt(response.data.total, 10);
+    }
+
+    const elements = response.data._embedded?.elements || [];
+    allWorkPackages.push(...elements);
+
+    if (elements.length === 0 || allWorkPackages.length >= total) {
+      break;
+    }
+
+    page++;
+  }
+
+  return allWorkPackages;
+}
+
+async function getWorkPackagesByType(projectId, typeId) {
+  const pageSize = 100;
+  let page = 1;
+  let total = null;
+  let allWorkPackages = [];
+
+  while (true) {
+    const response = await openProjectApi.get("/work_packages", {
+      params: {
+        filters: JSON.stringify([
+          { project: { operator: "=", values: [projectId.toString()] } },
+          { type: { operator: "=", values: [typeId.toString()] } },
+        ]),
+        offset: page,
+        pageSize,
+        sortBy: JSON.stringify([["id", "asc"]]),
+      },
+    });
+
+    if (total === null) {
+      total = parseInt(response.data.total, 10);
+    }
+
+    const elements = response.data._embedded?.elements || [];
+    allWorkPackages = allWorkPackages.concat(elements);
+
+    if (elements.length === 0 || allWorkPackages.length >= total) {
+      break;
+    }
+
+    page++;
+  }
+
+  return allWorkPackages;
+}
+
+async function getWorkPackage(workPackageId) {
+  const response = await openProjectApi.get(`/work_packages/${workPackageId}`);
+  return response.data;
+}
+
+async function deleteWorkPackage(workPackageId) {
+  await openProjectApi.delete(`/work_packages/${workPackageId}`);
+}
+
 async function setParentWorkPackage(childId, parentId) {
   try {
     // Get current work package to check existing parent
@@ -260,6 +339,94 @@ async function setParentWorkPackage(childId, parentId) {
     }
     throw error;
   }
+}
+
+function getRelationEndpointId(relation, endpoint) {
+  const href = relation?._links?.[endpoint]?.href;
+  return href ? href.split("/").pop() : null;
+}
+
+function relationConnects(relation, firstId, secondId) {
+  const fromId = getRelationEndpointId(relation, "from");
+  const toId = getRelationEndpointId(relation, "to");
+  const first = firstId?.toString();
+  const second = secondId?.toString();
+
+  return (
+    (fromId === first && toId === second) ||
+    (fromId === second && toId === first)
+  );
+}
+
+async function getRelationsForWorkPackage(workPackageId) {
+  const response = await openProjectApi.get(
+    `/work_packages/${workPackageId}/relations`
+  );
+  return response.data._embedded?.elements || [];
+}
+
+async function findRelationBetween(firstId, secondId) {
+  const relations = await getRelationsForWorkPackage(firstId);
+  const found = relations.find((relation) =>
+    relationConnects(relation, firstId, secondId)
+  );
+  if (found) return found;
+
+  const reverseRelations = await getRelationsForWorkPackage(secondId);
+  return (
+    reverseRelations.find((relation) =>
+      relationConnects(relation, firstId, secondId)
+    ) || null
+  );
+}
+
+async function createRelation(
+  fromId,
+  toId,
+  type = "includes",
+  description = "Created by Jira migration"
+) {
+  const response = await openProjectApi.post(
+    `/work_packages/${fromId}/relations`,
+    {
+      type,
+      description,
+      _links: {
+        to: {
+          href: `/api/v3/work_packages/${toId}`,
+        },
+      },
+    }
+  );
+  return response.data;
+}
+
+async function deleteRelation(relationId) {
+  await openProjectApi.delete(`/relations/${relationId}`);
+}
+
+async function ensureRelation(fromId, toId, type = "includes", options = {}) {
+  const { verify = false, dryRun = false } = options;
+
+  if (fromId?.toString() === toId?.toString()) {
+    throw new Error("Cannot create a relation from a work package to itself");
+  }
+
+  const existing = await findRelationBetween(fromId, toId);
+  if (existing) {
+    return { status: "exists", relation: existing };
+  }
+
+  if (verify) {
+    return { status: "missing" };
+  }
+
+  if (dryRun) {
+    return { status: "would-create" };
+  }
+
+  const relation = await createRelation(fromId, toId, type);
+  return { status: "created", relation };
 }
 
 async function createWorkPackage(projectId, payload) {
@@ -699,7 +866,16 @@ async function getCustomFieldOptionsMap(customFieldIds, projectId, typeIds) {
 
 module.exports = {
   getOpenProjectWorkPackages,
+  getAllWorkPackages,
+  getWorkPackagesByType,
+  getWorkPackage,
+  deleteWorkPackage,
   setParentWorkPackage,
+  getRelationsForWorkPackage,
+  findRelationBetween,
+  createRelation,
+  deleteRelation,
+  ensureRelation,
   createWorkPackage,
   updateWorkPackage,
   addComment,
