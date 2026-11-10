@@ -12,7 +12,9 @@
     "migrate-test-steps": "node migrate-test-steps.js",
     "migrate-test-executions": "node migrate-test-executions.js",
     "missing-report": "node missing-report.js",
-    "remove-duplicates": "node remove-duplicates.js"
+    "remove-duplicates": "node remove-duplicates.js",
+    "catalog:list": "node list-catalog.js",
+    "download": "node download.js"
   },
   "keywords": [
     "jira",

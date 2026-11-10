@@ -13,6 +13,7 @@ A tool to migrate issues from Jira to OpenProject, including attachments, commen
 - Handles incremental migrations
 - Migrates XRay Cloud test steps to OpenProject Test Step work packages
 - Links XRay Test Executions to their Tests and Test Plans
+- Lists all projects and their case/issue types from both systems
 
 ## Prerequisites
 
@@ -217,6 +218,66 @@ Use this when:
 - You're troubleshooting hierarchy-specific problems
 
 Note: Run this script before `migrate-relationships.js` as OpenProject doesn't allow both parent-child hierarchies and "partof"/"includes" relationships between the same work packages.
+
+### Project and Type Catalog
+
+`list-catalog.js` is read-only and uses the credentials from your `.env` file. Without arguments it lists every visible Jira project with its project-specific issue types and every OpenProject project with its available work package types.
+
+```bash
+# Print the catalog to the console
+node list-catalog.js
+
+# Also write a JSON file (default: catalog.json)
+node list-catalog.js --json
+
+# Also write a CSV file (default: catalog.csv)
+node list-catalog.js --csv
+
+# Custom output paths
+node list-catalog.js --json reports/catalog.json --csv reports/catalog.csv
+
+# Print the catalog to the console via npm
+npm run catalog:list
+```
+
+The JSON output contains a `jira.projects` array (`key`, `id`, `name`, `types`) and an `openproject.projects` array (`id`, `identifier`, `name`, `types`). The catalog CSV uses the same columns as the mapping export (`jira_project_id` … `openproject_typeid`). If a project is paired via `project-mapping.js`, its Jira case types are emitted as combined Jira → OpenProject rows. Unpaired Jira and OpenProject projects remain one-sided with empty columns on the other side.
+
+### Project Mapping
+
+`project-mapping.js` assigns Jira project keys to OpenProject projects so the catalog can emit combined rows:
+
+```js
+module.exports = {
+  AIC: 8,        // OpenProject project ID
+  VSN: "VSN",    // or OpenProject identifier
+};
+```
+
+For every mapped project, each Jira case type is resolved against the target project's work package types using the same rules as the migration (`type-mapping.js`, name match, `Task` fallback). Unused OpenProject types of a paired project are included with empty Jira columns. Projects without an entry remain one-sided; no automatic project pairing is performed.
+
+### Source to Target Type Mapping
+
+Pass a Jira project key and an OpenProject project ID (or identifier) to map every Jira issue type to the type that the migration would use in the target project:
+
+```bash
+node list-catalog.js --jira-project AIC --openproject-project 8
+
+# With exports
+node list-catalog.js --jira-project AIC --openproject-project AA \
+  --json reports/type-mapping.json --csv reports/type-mapping.csv
+```
+
+The mapping follows the same rules as the migration:
+
+1. `override` — an entry from `type-mapping.js`.
+2. `auto` — case-insensitive name match with a type in the target project.
+3. `default` — fallback to `Task` when no override or name match exists.
+4. `fallback` — the requested type is not available in the target project, so the first available type is used (as in `getWorkPackageTypeId`).
+5. `unused` — an OpenProject type that is not referenced by any Jira issue type. It is listed with empty Jira columns.
+
+The console output and the CSV export use the same columns: `jira_project_id,jira_project_key,jira_project_name,openproject_project_id,openproject_key,openproject_project_name,jira_typename,jira_type_id,openproject_typename,openproject_typeid`. `openproject_key` is the OpenProject project identifier. One row is emitted per Jira issue type, even when the Jira and OpenProject type names are identical; unused OpenProject types follow with empty Jira columns. The mapping source is summarized below the console table. The JSON output contains `jiraProject`, `openprojectProject`, and a `mappings` array with `jiraTypeId`, `jiraType`, `openProjectTypeId`, `openProjectType`, `mapping`, and the originally requested type (`requestedType`). For `unused` entries the Jira fields and `requestedType` are `null`.
+
+Use this before a migration to check which Jira issue types need an entry in `type-mapping.js` and which OpenProject types are available in the target project.
 
 ### XRay Test Steps
 

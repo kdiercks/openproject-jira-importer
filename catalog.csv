@@ -1,0 +1,704 @@
+jira_project_id,jira_project_key,jira_project_name,openproject_project_id,openproject_key,openproject_project_name,jira_typename,jira_type_id,openproject_typename,openproject_typeid
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Optimization,10042,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Task,10043,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Sub Task,10038,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,New Functionality,10035,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Bug,10034,Bug,7
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Epic,10000,Epic,5
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Requirement,10036,Requirement,17
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Risk,10044,Risk,15
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Test Case,10101,Test,8
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Usability Test,10045,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Story,10005,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,SOUP,10047,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Test Plan,10072,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Precondition,10074,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Test Execution,10073,Test Execution,11
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Test Set,10071,Task,1
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Test,10070,Test,8
+10137,AIC,AIcebird,8,AA,AIC - AIcebird,Sub Test Execution,10100,Task,1
+,,,8,AA,AIC - AIcebird,,,Milestone,2
+,,,8,AA,AIC - AIcebird,,,Phase,3
+,,,8,AA,AIC - AIcebird,,,Story,9
+,,,8,AA,AIC - AIcebird,,,CVE,18
+,,,8,AA,AIC - AIcebird,,,Test Step,20
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Optimization,10042,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Task,10043,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Sub Task,10038,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,New Functionality,10035,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Bug,10034,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Epic,10000,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Requirement,10036,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Risk,10044,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Usability Test,10045,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Story,10005,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,SOUP,10047,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Test,10070,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Test Set,10071,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Test Plan,10072,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Test Execution,10073,,
+10053,BIONTWEB,BioNTech - Website (IVD),,,,Precondition,10074,,
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Optimization,10042,Optimization,16
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Task,10043,Task,1
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Sub Task,10038,Sub Task,10
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,New Functionality,10035,New Functionality,14
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Bug,10034,Bug,7
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Epic,10000,Task,1
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Requirement,10036,Requirement,17
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Risk,10044,Risk,15
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Usability Test,10045,Task,1
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Story,10005,Task,1
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,SOUP,10047,Task,1
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Test,10070,Test,8
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Test Set,10071,Test Set,12
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Test Plan,10072,Test Plan,13
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Test Execution,10073,Test Execution,11
+10047,BMSRIT,BMS Run Info Tool,33,BRIT,BMS Run Info Tool,Precondition,10074,Task,1
+,,,33,BRIT,BMS Run Info Tool,,,Milestone,2
+,,,33,BRIT,BMS Run Info Tool,,,Phase,3
+,,,33,BRIT,BMS Run Info Tool,,,Story,9
+,,,33,BRIT,BMS Run Info Tool,,,CVE,18
+,,,33,BRIT,BMS Run Info Tool,,,Test Step,20
+10045,BONEBANK,BONEBANK,,,,Optimization,10042,,
+10045,BONEBANK,BONEBANK,,,,Task,10043,,
+10045,BONEBANK,BONEBANK,,,,Sub Task,10038,,
+10045,BONEBANK,BONEBANK,,,,New Functionality,10035,,
+10045,BONEBANK,BONEBANK,,,,Bug,10034,,
+10045,BONEBANK,BONEBANK,,,,Epic,10000,,
+10045,BONEBANK,BONEBANK,,,,Requirement,10036,,
+10045,BONEBANK,BONEBANK,,,,Risk,10044,,
+10045,BONEBANK,BONEBANK,,,,Usability Test,10045,,
+10045,BONEBANK,BONEBANK,,,,Story,10005,,
+10045,BONEBANK,BONEBANK,,,,SOUP,10047,,
+10045,BONEBANK,BONEBANK,,,,Test,10070,,
+10045,BONEBANK,BONEBANK,,,,Test Set,10071,,
+10045,BONEBANK,BONEBANK,,,,Test Plan,10072,,
+10045,BONEBANK,BONEBANK,,,,Test Execution,10073,,
+10045,BONEBANK,BONEBANK,,,,Precondition,10074,,
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Optimization,10042,Optimization,16
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Task,10043,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Sub Task,10038,Sub Task,10
+10136,BONETAG,BoneTag,35,BONE,BoneTag,New Functionality,10035,New Functionality,14
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Bug,10034,Bug,7
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Epic,10000,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Requirement,10036,Requirement,17
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Risk,10044,Risk,15
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Test Case,10101,Test,8
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Usability Test,10045,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Story,10005,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,SOUP,10047,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Test Plan,10072,Test Plan,13
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Precondition,10074,Task,1
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Test Execution,10073,Test Execution,11
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Test Set,10071,Test Set,12
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Test,10070,Test,8
+10136,BONETAG,BoneTag,35,BONE,BoneTag,Sub Test Execution,10100,Task,1
+,,,35,BONE,BoneTag,,,Milestone,2
+,,,35,BONE,BoneTag,,,Phase,3
+,,,35,BONE,BoneTag,,,Story,9
+,,,35,BONE,BoneTag,,,CVE,18
+,,,35,BONE,BoneTag,,,Test Step,20
+10048,BTRM,BONETAGRM,36,BONET,BONETAGRM,Risk,10044,Risk,15
+,,,36,BONET,BONETAGRM,,,Task,1
+,,,36,BONET,BONETAGRM,,,Milestone,2
+,,,36,BONET,BONETAGRM,,,Phase,3
+,,,36,BONET,BONETAGRM,,,Bug,7
+,,,36,BONET,BONETAGRM,,,Test,8
+,,,36,BONET,BONETAGRM,,,Story,9
+,,,36,BONET,BONETAGRM,,,Sub Task,10
+,,,36,BONET,BONETAGRM,,,Test Execution,11
+,,,36,BONET,BONETAGRM,,,Test Set,12
+,,,36,BONET,BONETAGRM,,,Test Plan,13
+,,,36,BONET,BONETAGRM,,,New Functionality,14
+,,,36,BONET,BONETAGRM,,,Optimization,16
+,,,36,BONET,BONETAGRM,,,Requirement,17
+,,,36,BONET,BONETAGRM,,,CVE,18
+,,,36,BONET,BONETAGRM,,,Test Step,20
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Optimization,10042,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Task,10043,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Sub Task,10038,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,New Functionality,10035,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Bug,10034,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Epic,10000,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Requirement,10036,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Risk,10044,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Usability Test,10045,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Story,10005,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,SOUP,10047,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Test,10070,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Test Set,10071,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Test Plan,10072,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Test Execution,10073,,
+10050,BSFC,Bristol-Myers Squibb - Flow Cytometry Antibody System,,,,Precondition,10074,,
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Optimization,10042,Optimization,16
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Task,10043,Task,1
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Sub Task,10038,Sub Task,10
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,New Functionality,10035,New Functionality,14
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Bug,10034,Bug,7
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Epic,10000,Task,1
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Requirement,10036,Requirement,17
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Risk,10044,Risk,15
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Usability Test,10045,Task,1
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Story,10005,Task,1
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,SOUP,10047,Task,1
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Test,10070,Test,8
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Test Set,10071,Test Set,12
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Test Plan,10072,Test Plan,13
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Test Execution,10073,Test Execution,11
+10035,CDR100,CAMPTON Reader 100SW,38,CR1,CAMPTON Reader 100SW,Precondition,10074,Task,1
+,,,38,CR1,CAMPTON Reader 100SW,,,Milestone,2
+,,,38,CR1,CAMPTON Reader 100SW,,,Phase,3
+,,,38,CR1,CAMPTON Reader 100SW,,,Story,9
+,,,38,CR1,CAMPTON Reader 100SW,,,CVE,18
+,,,38,CR1,CAMPTON Reader 100SW,,,Test Step,20
+10063,CDRRRM2,Campton Risk Management 2,39,CRM,Campton Risk Management,Task,10043,Task,1
+10063,CDRRRM2,Campton Risk Management 2,39,CRM,Campton Risk Management,Sub-Task,10050,Task,1
+,,,39,CRM,Campton Risk Management,,,Milestone,2
+,,,39,CRM,Campton Risk Management,,,Phase,3
+,,,39,CRM,Campton Risk Management,,,Bug,7
+,,,39,CRM,Campton Risk Management,,,Test,8
+,,,39,CRM,Campton Risk Management,,,Story,9
+,,,39,CRM,Campton Risk Management,,,Sub Task,10
+,,,39,CRM,Campton Risk Management,,,Test Execution,11
+,,,39,CRM,Campton Risk Management,,,Test Set,12
+,,,39,CRM,Campton Risk Management,,,Test Plan,13
+,,,39,CRM,Campton Risk Management,,,New Functionality,14
+,,,39,CRM,Campton Risk Management,,,Risk,15
+,,,39,CRM,Campton Risk Management,,,Optimization,16
+,,,39,CRM,Campton Risk Management,,,Requirement,17
+,,,39,CRM,Campton Risk Management,,,CVE,18
+,,,39,CRM,Campton Risk Management,,,Test Step,20
+10037,CLAIRE,Claire,29,CLA,Claire,Requirement,10036,Requirement,17
+10037,CLAIRE,Claire,29,CLA,Claire,Task,10043,Task,1
+10037,CLAIRE,Claire,29,CLA,Claire,Sub-Task,10050,Task,1
+10037,CLAIRE,Claire,29,CLA,Claire,Story,10005,Task,1
+10037,CLAIRE,Claire,29,CLA,Claire,Bug,10034,Bug,7
+10037,CLAIRE,Claire,29,CLA,Claire,Epic,10000,Epic,5
+10037,CLAIRE,Claire,29,CLA,Claire,Risk,10044,Risk,15
+10037,CLAIRE,Claire,29,CLA,Claire,Test,10070,Test,8
+10037,CLAIRE,Claire,29,CLA,Claire,Test Set,10071,Test Set,12
+10037,CLAIRE,Claire,29,CLA,Claire,Test Plan,10072,Test Plan,13
+10037,CLAIRE,Claire,29,CLA,Claire,Test Execution,10073,Test Execution,11
+10037,CLAIRE,Claire,29,CLA,Claire,Precondition,10074,Task,1
+,,,29,CLA,Claire,,,Milestone,2
+,,,29,CLA,Claire,,,Phase,3
+,,,29,CLA,Claire,,,Story,9
+,,,29,CLA,Claire,,,Sub Task,10
+,,,29,CLA,Claire,,,New Functionality,14
+,,,29,CLA,Claire,,,Optimization,16
+,,,29,CLA,Claire,,,CVE,18
+,,,29,CLA,Claire,,,Test Step,20
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Optimization,10042,Optimization,16
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Task,10043,Task,1
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Sub Task,10038,Sub Task,10
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,New Functionality,10035,New Functionality,14
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Bug,10034,Bug,7
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Epic,10000,Epic,5
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Requirement,10036,Requirement,17
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Risk,10044,Risk,15
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Test Case,10101,Test,8
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Usability Test,10045,Task,1
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Story,10005,Task,1
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,SOUP,10047,Task,1
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Test Plan,10072,Test Plan,13
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Precondition,10074,Task,1
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Test Execution,10073,Test Execution,11
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Test Set,10071,Test Set,12
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Test,10070,Test,8
+10135,CBI,Cryotherm - BioSafe Info,18,CC,CBI - Cryotherm,Sub Test Execution,10100,Task,1
+,,,18,CC,CBI - Cryotherm,,,Milestone,2
+,,,18,CC,CBI - Cryotherm,,,Phase,3
+,,,18,CC,CBI - Cryotherm,,,Feature,4
+,,,18,CC,CBI - Cryotherm,,,Story,9
+,,,18,CC,CBI - Cryotherm,,,CVE,18
+,,,18,CC,CBI - Cryotherm,,,Test Step,20
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Optimization,10042,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Task,10043,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Sub Task,10038,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,New Functionality,10035,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Bug,10034,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Epic,10000,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Requirement,10036,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Risk,10044,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Usability Test,10045,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Story,10005,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,SOUP,10047,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Test,10070,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Test Set,10071,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Test Plan,10072,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Test Execution,10073,,
+10057,CBL,Cryotherm - BSC3 Lastenheft,,,,Precondition,10074,,
+10042,EMECK,EMECK,41,EME,EMECK,Optimization,10042,Optimization,16
+10042,EMECK,EMECK,41,EME,EMECK,Task,10043,Task,1
+10042,EMECK,EMECK,41,EME,EMECK,Sub Task,10038,Sub Task,10
+10042,EMECK,EMECK,41,EME,EMECK,New Functionality,10035,New Functionality,14
+10042,EMECK,EMECK,41,EME,EMECK,Bug,10034,Bug,7
+10042,EMECK,EMECK,41,EME,EMECK,Epic,10000,Task,1
+10042,EMECK,EMECK,41,EME,EMECK,Requirement,10036,Requirement,17
+10042,EMECK,EMECK,41,EME,EMECK,Risk,10044,Risk,15
+10042,EMECK,EMECK,41,EME,EMECK,Usability Test,10045,Task,1
+10042,EMECK,EMECK,41,EME,EMECK,Story,10005,Task,1
+10042,EMECK,EMECK,41,EME,EMECK,SOUP,10047,Task,1
+10042,EMECK,EMECK,41,EME,EMECK,Test,10070,Test,8
+10042,EMECK,EMECK,41,EME,EMECK,Test Set,10071,Test Set,12
+10042,EMECK,EMECK,41,EME,EMECK,Test Plan,10072,Test Plan,13
+10042,EMECK,EMECK,41,EME,EMECK,Test Execution,10073,Test Execution,11
+10042,EMECK,EMECK,41,EME,EMECK,Precondition,10074,Task,1
+,,,41,EME,EMECK,,,Milestone,2
+,,,41,EME,EMECK,,,Phase,3
+,,,41,EME,EMECK,,,Story,9
+,,,41,EME,EMECK,,,CVE,18
+,,,41,EME,EMECK,,,Test Step,20
+10044,INTAKT,INTAKT,,,,Optimization,10042,,
+10044,INTAKT,INTAKT,,,,Task,10043,,
+10044,INTAKT,INTAKT,,,,Sub Task,10038,,
+10044,INTAKT,INTAKT,,,,New Functionality,10035,,
+10044,INTAKT,INTAKT,,,,Bug,10034,,
+10044,INTAKT,INTAKT,,,,Epic,10000,,
+10044,INTAKT,INTAKT,,,,Requirement,10036,,
+10044,INTAKT,INTAKT,,,,Risk,10044,,
+10044,INTAKT,INTAKT,,,,Usability Test,10045,,
+10044,INTAKT,INTAKT,,,,Story,10005,,
+10044,INTAKT,INTAKT,,,,SOUP,10047,,
+10044,INTAKT,INTAKT,,,,Test,10070,,
+10044,INTAKT,INTAKT,,,,Test Set,10071,,
+10044,INTAKT,INTAKT,,,,Test Plan,10072,,
+10044,INTAKT,INTAKT,,,,Test Execution,10073,,
+10044,INTAKT,INTAKT,,,,Precondition,10074,,
+10198,KIRA,Kira,50,KIR,Kira,Task,10199,Task,1
+10198,KIRA,Kira,50,KIR,Kira,Bug,10200,Bug,7
+10198,KIRA,Kira,50,KIR,Kira,Story,10201,Task,1
+10198,KIRA,Kira,50,KIR,Kira,Epic,10202,Task,1
+10198,KIRA,Kira,50,KIR,Kira,Subtask,10203,Task,1
+10198,KIRA,Kira,50,KIR,Kira,Risk,10236,Risk,15
+,,,50,KIR,Kira,,,Milestone,2
+,,,50,KIR,Kira,,,Phase,3
+,,,50,KIR,Kira,,,Test,8
+,,,50,KIR,Kira,,,Story,9
+,,,50,KIR,Kira,,,Sub Task,10
+,,,50,KIR,Kira,,,Test Execution,11
+,,,50,KIR,Kira,,,Test Set,12
+,,,50,KIR,Kira,,,Test Plan,13
+,,,50,KIR,Kira,,,New Functionality,14
+,,,50,KIR,Kira,,,Optimization,16
+,,,50,KIR,Kira,,,Requirement,17
+,,,50,KIR,Kira,,,CVE,18
+,,,50,KIR,Kira,,,Test Step,20
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,Improvement,10052,Task,1
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,Task,10043,Task,1
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,Sub-Task,10050,Task,1
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,New Feature,10051,Task,1
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,Bug,10034,Bug,7
+10046,LOF,Lab OS Flux,43,LOF,Lab OS Flux,Epic,10000,Task,1
+,,,43,LOF,Lab OS Flux,,,Milestone,2
+,,,43,LOF,Lab OS Flux,,,Phase,3
+,,,43,LOF,Lab OS Flux,,,Test,8
+,,,43,LOF,Lab OS Flux,,,Story,9
+,,,43,LOF,Lab OS Flux,,,Sub Task,10
+,,,43,LOF,Lab OS Flux,,,Test Execution,11
+,,,43,LOF,Lab OS Flux,,,Test Set,12
+,,,43,LOF,Lab OS Flux,,,Test Plan,13
+,,,43,LOF,Lab OS Flux,,,New Functionality,14
+,,,43,LOF,Lab OS Flux,,,Risk,15
+,,,43,LOF,Lab OS Flux,,,Optimization,16
+,,,43,LOF,Lab OS Flux,,,Requirement,17
+,,,43,LOF,Lab OS Flux,,,CVE,18
+,,,43,LOF,Lab OS Flux,,,Test Step,20
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Optimization,10042,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Task,10043,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Sub Task,10038,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,New Functionality,10035,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Bug,10034,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Epic,10000,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Requirement,10036,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Risk,10044,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Usability Test,10045,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Story,10005,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,SOUP,10047,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Test,10070,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Test Set,10071,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Test Plan,10072,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Test Execution,10073,,
+10055,PEEXI,PE -Epson Expression 11000XL Integration,,,,Precondition,10074,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Optimization,10042,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Task,10043,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Sub Task,10038,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,New Functionality,10035,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Bug,10034,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Epic,10000,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Requirement,10036,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Risk,10044,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Usability Test,10045,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Story,10005,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,SOUP,10047,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Test,10070,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Test Set,10071,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Test Plan,10072,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Test Execution,10073,,
+10056,PLGT,PerkinElmer -  LabChip GX Touch,,,,Precondition,10074,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Optimization,10042,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Task,10043,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Sub Task,10038,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,New Functionality,10035,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Bug,10034,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Epic,10000,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Requirement,10036,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Risk,10044,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Usability Test,10045,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Story,10005,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,SOUP,10047,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Test,10070,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Test Set,10071,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Test Plan,10072,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Test Execution,10073,,
+10058,PBMD,PerkinElmer - Berthold Mithras Driver,,,,Precondition,10074,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Optimization,10042,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Task,10043,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Sub Task,10038,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,New Functionality,10035,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Bug,10034,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Epic,10000,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Requirement,10036,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Risk,10044,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Usability Test,10045,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Story,10005,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,SOUP,10047,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Test,10070,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Test Set,10071,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Test Plan,10072,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Test Execution,10073,,
+10049,PEEMP,PerkinElmer - Envision Enhancement and Maintenance Program,,,,Precondition,10074,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Optimization,10042,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Task,10043,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Sub Task,10038,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,New Functionality,10035,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Bug,10034,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Epic,10000,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Requirement,10036,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Risk,10044,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Usability Test,10045,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Story,10005,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,SOUP,10047,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Test,10070,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Test Set,10071,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Test Plan,10072,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Test Execution,10073,,
+10043,PERSYSD,PerkinElmer - SystemDesigner,,,,Precondition,10074,,
+10138,PS,Process Software,49,PRS,Process Software,Optimization,10042,Optimization,16
+10138,PS,Process Software,49,PRS,Process Software,Task,10043,Task,1
+10138,PS,Process Software,49,PRS,Process Software,Sub Task,10038,Sub Task,10
+10138,PS,Process Software,49,PRS,Process Software,New Functionality,10035,New Functionality,14
+10138,PS,Process Software,49,PRS,Process Software,Bug,10034,Bug,7
+10138,PS,Process Software,49,PRS,Process Software,Epic,10000,Task,1
+10138,PS,Process Software,49,PRS,Process Software,Requirement,10036,Requirement,17
+10138,PS,Process Software,49,PRS,Process Software,Risk,10044,Risk,15
+10138,PS,Process Software,49,PRS,Process Software,Test Case,10101,Test,8
+10138,PS,Process Software,49,PRS,Process Software,Usability Test,10045,Task,1
+10138,PS,Process Software,49,PRS,Process Software,Story,10005,Task,1
+10138,PS,Process Software,49,PRS,Process Software,SOUP,10047,Task,1
+10138,PS,Process Software,49,PRS,Process Software,Test Plan,10072,Test Plan,13
+10138,PS,Process Software,49,PRS,Process Software,Precondition,10074,Task,1
+10138,PS,Process Software,49,PRS,Process Software,Test Execution,10073,Test Execution,11
+10138,PS,Process Software,49,PRS,Process Software,Test Set,10071,Test Set,12
+10138,PS,Process Software,49,PRS,Process Software,Test,10070,Test,8
+10138,PS,Process Software,49,PRS,Process Software,Sub Test Execution,10100,Task,1
+,,,49,PRS,Process Software,,,Milestone,2
+,,,49,PRS,Process Software,,,Phase,3
+,,,49,PRS,Process Software,,,Story,9
+,,,49,PRS,Process Software,,,CVE,18
+,,,49,PRS,Process Software,,,Test Step,20
+10165,RM,RISK MANAGEMENT,27,RRM,RM - RISK MANAGEMENT,Risk,10044,Risk,15
+,,,27,RRM,RM - RISK MANAGEMENT,,,Task,1
+,,,27,RRM,RM - RISK MANAGEMENT,,,Milestone,2
+,,,27,RRM,RM - RISK MANAGEMENT,,,Phase,3
+,,,27,RRM,RM - RISK MANAGEMENT,,,Epic,5
+,,,27,RRM,RM - RISK MANAGEMENT,,,Bug,7
+,,,27,RRM,RM - RISK MANAGEMENT,,,Test,8
+,,,27,RRM,RM - RISK MANAGEMENT,,,Story,9
+,,,27,RRM,RM - RISK MANAGEMENT,,,Sub Task,10
+,,,27,RRM,RM - RISK MANAGEMENT,,,Test Execution,11
+,,,27,RRM,RM - RISK MANAGEMENT,,,Test Set,12
+,,,27,RRM,RM - RISK MANAGEMENT,,,Test Plan,13
+,,,27,RRM,RM - RISK MANAGEMENT,,,New Functionality,14
+,,,27,RRM,RM - RISK MANAGEMENT,,,Optimization,16
+,,,27,RRM,RM - RISK MANAGEMENT,,,Requirement,17
+,,,27,RRM,RM - RISK MANAGEMENT,,,CVE,18
+,,,27,RRM,RM - RISK MANAGEMENT,,,Test Step,20
+10052,RDGPS,RouteDocGPS,,,,Optimization,10042,,
+10052,RDGPS,RouteDocGPS,,,,Task,10043,,
+10052,RDGPS,RouteDocGPS,,,,Sub Task,10038,,
+10052,RDGPS,RouteDocGPS,,,,New Functionality,10035,,
+10052,RDGPS,RouteDocGPS,,,,Bug,10034,,
+10052,RDGPS,RouteDocGPS,,,,Epic,10000,,
+10052,RDGPS,RouteDocGPS,,,,Requirement,10036,,
+10052,RDGPS,RouteDocGPS,,,,Risk,10044,,
+10052,RDGPS,RouteDocGPS,,,,Usability Test,10045,,
+10052,RDGPS,RouteDocGPS,,,,Story,10005,,
+10052,RDGPS,RouteDocGPS,,,,SOUP,10047,,
+10052,RDGPS,RouteDocGPS,,,,Test,10070,,
+10052,RDGPS,RouteDocGPS,,,,Test Set,10071,,
+10052,RDGPS,RouteDocGPS,,,,Test Plan,10072,,
+10052,RDGPS,RouteDocGPS,,,,Test Execution,10073,,
+10052,RDGPS,RouteDocGPS,,,,Precondition,10074,,
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Optimization,10042,Optimization,16
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Task,10043,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Sub Task,10038,Sub Task,10
+10139,SN,Sales Navigator,52,SN,Sales Navigator,New Functionality,10035,New Functionality,14
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Bug,10034,Bug,7
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Epic,10000,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Requirement,10036,Requirement,17
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Risk,10044,Risk,15
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Test Case,10101,Test,8
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Usability Test,10045,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Story,10005,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,SOUP,10047,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Test Plan,10072,Test Plan,13
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Precondition,10074,Task,1
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Test Execution,10073,Test Execution,11
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Test Set,10071,Test Set,12
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Test,10070,Test,8
+10139,SN,Sales Navigator,52,SN,Sales Navigator,Sub Test Execution,10100,Task,1
+,,,52,SN,Sales Navigator,,,Milestone,2
+,,,52,SN,Sales Navigator,,,Phase,3
+,,,52,SN,Sales Navigator,,,Story,9
+,,,52,SN,Sales Navigator,,,CVE,18
+,,,52,SN,Sales Navigator,,,Test Step,20
+10038,BSA,soventec - AMS,54,AMS2,AMS,Optimization,10042,Optimization,16
+10038,BSA,soventec - AMS,54,AMS2,AMS,Task,10043,Task,1
+10038,BSA,soventec - AMS,54,AMS2,AMS,Sub Task,10038,Sub Task,10
+10038,BSA,soventec - AMS,54,AMS2,AMS,New Functionality,10035,New Functionality,14
+10038,BSA,soventec - AMS,54,AMS2,AMS,Bug,10034,Bug,7
+10038,BSA,soventec - AMS,54,AMS2,AMS,Epic,10000,Task,1
+10038,BSA,soventec - AMS,54,AMS2,AMS,Requirement,10036,Requirement,17
+10038,BSA,soventec - AMS,54,AMS2,AMS,Risk,10044,Risk,15
+10038,BSA,soventec - AMS,54,AMS2,AMS,Usability Test,10045,Task,1
+10038,BSA,soventec - AMS,54,AMS2,AMS,Story,10005,Task,1
+10038,BSA,soventec - AMS,54,AMS2,AMS,SOUP,10047,Task,1
+10038,BSA,soventec - AMS,54,AMS2,AMS,Test,10070,Test,8
+10038,BSA,soventec - AMS,54,AMS2,AMS,Test Set,10071,Test Set,12
+10038,BSA,soventec - AMS,54,AMS2,AMS,Test Plan,10072,Test Plan,13
+10038,BSA,soventec - AMS,54,AMS2,AMS,Test Execution,10073,Test Execution,11
+10038,BSA,soventec - AMS,54,AMS2,AMS,Precondition,10074,Task,1
+,,,54,AMS2,AMS,,,Milestone,2
+,,,54,AMS2,AMS,,,Phase,3
+,,,54,AMS2,AMS,,,Story,9
+,,,54,AMS2,AMS,,,CVE,18
+,,,54,AMS2,AMS,,,Test Step,20
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Optimization,10042,Optimization,16
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Task,10043,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Sub Task,10038,Sub Task,10
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,New Functionality,10035,New Functionality,14
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Bug,10034,Bug,7
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Epic,10000,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Requirement,10036,Requirement,17
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Risk,10044,Risk,15
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Test Case,10101,Test,8
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Usability Test,10045,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Story,10005,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,SOUP,10047,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Test Plan,10072,Test Plan,13
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Precondition,10074,Task,1
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Test Execution,10073,Test Execution,11
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Test Set,10071,Test Set,12
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Test,10070,Test,8
+10134,LABOS,soventec - Lab OS,53,LO,Lab OS,Sub Test Execution,10100,Task,1
+,,,53,LO,Lab OS,,,Milestone,2
+,,,53,LO,Lab OS,,,Phase,3
+,,,53,LO,Lab OS,,,Story,9
+,,,53,LO,Lab OS,,,CVE,18
+,,,53,LO,Lab OS,,,Test Step,20
+10061,SBT2,soventec Business Tasks2,55,SBT,soventec Business Tasks,Task,10043,Task,1
+10061,SBT2,soventec Business Tasks2,55,SBT,soventec Business Tasks,Sub-Task,10050,Task,1
+,,,55,SBT,soventec Business Tasks,,,Milestone,2
+,,,55,SBT,soventec Business Tasks,,,Phase,3
+,,,55,SBT,soventec Business Tasks,,,Bug,7
+,,,55,SBT,soventec Business Tasks,,,Test,8
+,,,55,SBT,soventec Business Tasks,,,Story,9
+,,,55,SBT,soventec Business Tasks,,,Sub Task,10
+,,,55,SBT,soventec Business Tasks,,,Test Execution,11
+,,,55,SBT,soventec Business Tasks,,,Test Set,12
+,,,55,SBT,soventec Business Tasks,,,Test Plan,13
+,,,55,SBT,soventec Business Tasks,,,New Functionality,14
+,,,55,SBT,soventec Business Tasks,,,Risk,15
+,,,55,SBT,soventec Business Tasks,,,Optimization,16
+,,,55,SBT,soventec Business Tasks,,,Requirement,17
+,,,55,SBT,soventec Business Tasks,,,CVE,18
+,,,55,SBT,soventec Business Tasks,,,Test Step,20
+10059,TSP,Test SW Project,58,TEST,Testproject,Optimization,10042,Optimization,16
+10059,TSP,Test SW Project,58,TEST,Testproject,Task,10043,Task,1
+10059,TSP,Test SW Project,58,TEST,Testproject,Sub Task,10038,Sub Task,10
+10059,TSP,Test SW Project,58,TEST,Testproject,New Functionality,10035,New Functionality,14
+10059,TSP,Test SW Project,58,TEST,Testproject,Bug,10034,Bug,7
+10059,TSP,Test SW Project,58,TEST,Testproject,Epic,10000,Task,1
+10059,TSP,Test SW Project,58,TEST,Testproject,Requirement,10036,Requirement,17
+10059,TSP,Test SW Project,58,TEST,Testproject,Risk,10044,Risk,15
+10059,TSP,Test SW Project,58,TEST,Testproject,Usability Test,10045,Task,1
+10059,TSP,Test SW Project,58,TEST,Testproject,Story,10005,Task,1
+10059,TSP,Test SW Project,58,TEST,Testproject,SOUP,10047,Task,1
+10059,TSP,Test SW Project,58,TEST,Testproject,Test,10070,Test,8
+10059,TSP,Test SW Project,58,TEST,Testproject,Test Set,10071,Test Set,12
+10059,TSP,Test SW Project,58,TEST,Testproject,Test Plan,10072,Test Plan,13
+10059,TSP,Test SW Project,58,TEST,Testproject,Test Execution,10073,Test Execution,11
+10059,TSP,Test SW Project,58,TEST,Testproject,Precondition,10074,Task,1
+,,,58,TEST,Testproject,,,Milestone,2
+,,,58,TEST,Testproject,,,Phase,3
+,,,58,TEST,Testproject,,,Story,9
+,,,58,TEST,Testproject,,,CVE,18
+,,,58,TEST,Testproject,,,Test Step,20
+10060,TES,TestTask,3,TES,Testporoject,Optimization,10042,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Task,10043,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Sub Task,10038,Task,1
+10060,TES,TestTask,3,TES,Testporoject,New Functionality,10035,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Bug,10034,Bug,7
+10060,TES,TestTask,3,TES,Testporoject,Epic,10000,Epic,5
+10060,TES,TestTask,3,TES,Testporoject,Requirement,10036,Requirement,17
+10060,TES,TestTask,3,TES,Testporoject,Risk,10044,Risk,15
+10060,TES,TestTask,3,TES,Testporoject,Usability Test,10045,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Story,10005,Task,1
+10060,TES,TestTask,3,TES,Testporoject,SOUP,10047,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Test,10070,Test,8
+10060,TES,TestTask,3,TES,Testporoject,Test Set,10071,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Test Plan,10072,Task,1
+10060,TES,TestTask,3,TES,Testporoject,Test Execution,10073,Test Execution,11
+10060,TES,TestTask,3,TES,Testporoject,Precondition,10074,Task,1
+,,,3,TES,Testporoject,,,Milestone,2
+,,,3,TES,Testporoject,,,Phase,3
+,,,3,TES,Testporoject,,,Story,9
+,,,3,TES,Testporoject,,,CVE,18
+,,,3,TES,Testporoject,,,Test Step,20
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Optimization,10042,Optimization,16
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Task,10043,Task,1
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Sub Task,10038,Sub Task,10
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,New Functionality,10035,New Functionality,14
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Bug,10034,Bug,7
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Epic,10000,Task,1
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Requirement,10036,Requirement,17
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Risk,10044,Risk,15
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Usability Test,10045,Task,1
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Story,10005,Task,1
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,SOUP,10047,Task,1
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Test,10070,Test,8
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Test Set,10071,Test Set,12
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Test Plan,10072,Test Plan,13
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Test Execution,10073,Test Execution,11
+10041,VSN,Vanadis - Smart NIPT,56,VSN,Vanadis - Smart NIPT,Precondition,10074,Task,1
+,,,56,VSN,Vanadis - Smart NIPT,,,Milestone,2
+,,,56,VSN,Vanadis - Smart NIPT,,,Phase,3
+,,,56,VSN,Vanadis - Smart NIPT,,,Story,9
+,,,56,VSN,Vanadis - Smart NIPT,,,CVE,18
+,,,56,VSN,Vanadis - Smart NIPT,,,Test Step,20
+10054,VSNRISK,Vanadis Smart NIPT RISKS,57,VSNR,Vanadis Smart NIPT RISKS,Risk,10044,Risk,15
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Task,1
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Milestone,2
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Phase,3
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Bug,7
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Test,8
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Story,9
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Sub Task,10
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Test Execution,11
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Test Set,12
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Test Plan,13
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,New Functionality,14
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Optimization,16
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Requirement,17
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,CVE,18
+,,,57,VSNR,Vanadis Smart NIPT RISKS,,,Test Step,20
+,,,61,F20,Firman 2.0,,,Task,1
+,,,61,F20,Firman 2.0,,,Milestone,2
+,,,61,F20,Firman 2.0,,,Phase,3
+,,,61,F20,Firman 2.0,,,Bug,7
+,,,61,F20,Firman 2.0,,,Test,8
+,,,61,F20,Firman 2.0,,,Story,9
+,,,61,F20,Firman 2.0,,,Sub Task,10
+,,,61,F20,Firman 2.0,,,Test Execution,11
+,,,61,F20,Firman 2.0,,,Test Set,12
+,,,61,F20,Firman 2.0,,,Test Plan,13
+,,,61,F20,Firman 2.0,,,New Functionality,14
+,,,61,F20,Firman 2.0,,,Risk,15
+,,,61,F20,Firman 2.0,,,Optimization,16
+,,,61,F20,Firman 2.0,,,Requirement,17
+,,,61,F20,Firman 2.0,,,CVE,18
+,,,61,F20,Firman 2.0,,,Test Step,20
+,,,60,TT,Testmanagement Tool,,,Task,1
+,,,60,TT,Testmanagement Tool,,,Milestone,2
+,,,60,TT,Testmanagement Tool,,,Phase,3
+,,,60,TT,Testmanagement Tool,,,Bug,7
+,,,60,TT,Testmanagement Tool,,,Test,8
+,,,60,TT,Testmanagement Tool,,,Story,9
+,,,60,TT,Testmanagement Tool,,,Sub Task,10
+,,,60,TT,Testmanagement Tool,,,Test Execution,11
+,,,60,TT,Testmanagement Tool,,,Test Set,12
+,,,60,TT,Testmanagement Tool,,,Test Plan,13
+,,,60,TT,Testmanagement Tool,,,New Functionality,14
+,,,60,TT,Testmanagement Tool,,,Risk,15
+,,,60,TT,Testmanagement Tool,,,Optimization,16
+,,,60,TT,Testmanagement Tool,,,Requirement,17
+,,,60,TT,Testmanagement Tool,,,CVE,18
+,,,60,TT,Testmanagement Tool,,,Test Step,20
+,,,59,SMA,Smartarchivo,,,Task,1
+,,,59,SMA,Smartarchivo,,,Milestone,2
+,,,59,SMA,Smartarchivo,,,Phase,3
+,,,59,SMA,Smartarchivo,,,Bug,7
+,,,59,SMA,Smartarchivo,,,Test,8
+,,,59,SMA,Smartarchivo,,,Story,9
+,,,59,SMA,Smartarchivo,,,Sub Task,10
+,,,59,SMA,Smartarchivo,,,Test Execution,11
+,,,59,SMA,Smartarchivo,,,Test Set,12
+,,,59,SMA,Smartarchivo,,,Test Plan,13
+,,,59,SMA,Smartarchivo,,,New Functionality,14
+,,,59,SMA,Smartarchivo,,,Risk,15
+,,,59,SMA,Smartarchivo,,,Optimization,16
+,,,59,SMA,Smartarchivo,,,Requirement,17
+,,,59,SMA,Smartarchivo,,,CVE,18
+,,,59,SMA,Smartarchivo,,,Test Step,20
+,,,31,LOTM,Lab OS Test Master,,,Task,1
+,,,31,LOTM,Lab OS Test Master,,,Milestone,2
+,,,31,LOTM,Lab OS Test Master,,,Phase,3
+,,,31,LOTM,Lab OS Test Master,,,Epic,5
+,,,31,LOTM,Lab OS Test Master,,,Bug,7
+,,,31,LOTM,Lab OS Test Master,,,Test,8
+,,,31,LOTM,Lab OS Test Master,,,Story,9
+,,,31,LOTM,Lab OS Test Master,,,Sub Task,10
+,,,31,LOTM,Lab OS Test Master,,,Test Execution,11
+,,,31,LOTM,Lab OS Test Master,,,Test Set,12
+,,,31,LOTM,Lab OS Test Master,,,Test Plan,13
+,,,31,LOTM,Lab OS Test Master,,,New Functionality,14
+,,,31,LOTM,Lab OS Test Master,,,Risk,15
+,,,31,LOTM,Lab OS Test Master,,,Optimization,16
+,,,31,LOTM,Lab OS Test Master,,,Requirement,17
+,,,31,LOTM,Lab OS Test Master,,,CVE,18
+,,,31,LOTM,Lab OS Test Master,,,Test Step,20
+,,,30,AAMT,AIC - AIcebird Master Test,,,Task,1
+,,,30,AAMT,AIC - AIcebird Master Test,,,Milestone,2
+,,,30,AAMT,AIC - AIcebird Master Test,,,Phase,3
+,,,30,AAMT,AIC - AIcebird Master Test,,,Epic,5
+,,,30,AAMT,AIC - AIcebird Master Test,,,Bug,7
+,,,30,AAMT,AIC - AIcebird Master Test,,,Test,8
+,,,30,AAMT,AIC - AIcebird Master Test,,,Story,9
+,,,30,AAMT,AIC - AIcebird Master Test,,,Sub Task,10
+,,,30,AAMT,AIC - AIcebird Master Test,,,Test Execution,11
+,,,30,AAMT,AIC - AIcebird Master Test,,,Test Set,12
+,,,30,AAMT,AIC - AIcebird Master Test,,,Test Plan,13
+,,,30,AAMT,AIC - AIcebird Master Test,,,New Functionality,14
+,,,30,AAMT,AIC - AIcebird Master Test,,,Risk,15
+,,,30,AAMT,AIC - AIcebird Master Test,,,Optimization,16
+,,,30,AAMT,AIC - AIcebird Master Test,,,Requirement,17
+,,,30,AAMT,AIC - AIcebird Master Test,,,CVE,18
+,,,30,AAMT,AIC - AIcebird Master Test,,,Test Step,20
+,,,28,MSG,Migration SVN Git,,,,
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Task,1
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Milestone,2
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Phase,3
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Epic,5
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Bug,7
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Test,8
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Story,9
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Test Execution,11
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Test Set,12
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,New Functionality,14
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Risk,15
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Optimization,16
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Requirement,17
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,CVE,18
+,,,7,MSAUP,"MMAIC Server and UI ""PancreaRisk""",,,Test Step,20
+,,,5,TOD,Todos,,,,
